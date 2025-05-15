@@ -1,0 +1,82 @@
+node index.js etb "prismatic evolutions"                                
+cat: Elite-Trainer-Boxes, prod: -Elite-Trainer-Box
+
+product: prismatic-evolutions-Elite-Trainer-Box
+
+url: https://www.cardmarket.com/fr/Pokemon/Products/Elite-Trainer-Boxes/prismatic-evolutions-Elite-Trainer-Box?sellerCountry=4&language=2
+
+[
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'Meruemm',
+    sales: '15',
+    price: '130,00 €',
+    amount: '2'
+  },
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'BlackkOut',
+    sales: '7',
+    price: '140,00 €',
+    amount: '1'
+  },
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'BlackkOut',
+    sales: '7',
+    price: '145,00 €',
+    amount: '1'
+  },
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'delfeendu13',
+    sales: '181',
+    price: '150,00 €',
+    amount: '1'
+  },
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'Meruemm',
+    sales: '15',
+    price: '150,00 €',
+    amount: '1'
+  },
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'Baggio23',
+    sales: '0',
+    price: '150,00 €',
+    amount: '1'
+  },
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'Pinkfinger',
+    sales: '125',
+    price: '155,00 €',
+    amount: '1'
+  },
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'UchihAce',
+    sales: '11',
+    price: '180,00 €',
+    amount: '1'
+  },
+  {
+    article: "Coffret Dresseur d'Élite de Évolutions Prismatiques\n" +
+      'Prismatic Evolutions Elite Trainer Box - Elite Trainer Boxes',
+    name: 'MANARINE',
+    sales: '1K',
+    price: '777,00 €',
+    amount: '1'
+  }
+]
+               
