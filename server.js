@@ -21,6 +21,8 @@ app.use(passport.session());
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
+let displayName = "";
+
 // Google OAuth Strategy
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_ID,
@@ -30,6 +32,9 @@ passport.use(new GoogleStrategy({
   // Ici tu peux enregistrer le user dans ta DB si besoin
   console.log('Access Token:', accessToken);
   console.log('Profile:', profile);
+  console.log('email:', profile.emails[0].value);
+  displayName = profile.displayName;
+
   return done(null, profile);
 }));
 
@@ -40,7 +45,7 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.send('Connecté avec succès via Google !');
+    res.send(`Connecté avec succès  en tant que ${displayName}, via Google !`);
   });
 
 app.listen(5000, () => console.log('Serveur sur le port 5000'));
