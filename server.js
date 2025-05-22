@@ -1,3 +1,4 @@
+// require("name.js");
 // server.js
 const express = require('express');
 const session = require('express-session');
@@ -22,6 +23,7 @@ passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
 let displayName = "";
+let prof = "";
 
 // Google OAuth Strategy
 passport.use(new GoogleStrategy({
@@ -31,7 +33,8 @@ passport.use(new GoogleStrategy({
 }, (accessToken, refreshToken, profile, done) => {
   // Ici tu peux enregistrer le user dans ta DB si besoin
   console.log('Access Token:', accessToken);
-  console.log('Profile:', profile);
+  console.log('Profile:', profile._json);
+  prof = profile._json;
   console.log('email:', profile.emails[0].value);
   displayName = profile.displayName;
 
@@ -40,12 +43,42 @@ passport.use(new GoogleStrategy({
 
 // Routes OAuth
 app.get('/auth/google',
-  passport.authenticate('google', { scope: ['email', 'profile'] }));
+  passport.authenticate('google', { scope: ['email', 'profile'] })
+);
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => {
-    res.send(`Connecté avec succès  en tant que ${displayName}, via Google !`);
+	passport.authenticate('google', { failureRedirect: '/' }),
+	(req, res) => {
+    	res.sendFile(`/home/kali/Desktop/poke-scrap/test2.html`);
+	// res.redirect(`/welcome?name=${encodeURIComponent(displayName)}`);
+	}
+);
+
+
+// app.get('/user', (req, res) => {
+// 	res.send(prof.json);
+// })
+
+app.get('/user', (req, res) => {
+	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
+  
+	res.json({
+		name: prof.name,
+		picture: prof.picture,
+		email: prof.email
+	});
+  });
+
+app.get('/logout', (req, res) => {
+	req.logout(err => {
+		if (err) {
+			console.error('Logout error:', err);
+			return res.status(500).send('Logout failed.');
+		}
+		req.session.destroy(() => {
+		res.sendFile("/home/kali/Desktop/poke-scrap/test.html"); // Or any page you want
+	  });
+	});
   });
 
 app.listen(5000, () => console.log('Serveur sur le port 5000'));

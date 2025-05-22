@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion Google</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; }
+    button { font-size: 18px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h1>Hi, <span id="plop"></span>!</h1>
+  <img id="img_plop" src="" alt="Photo de profil" width="100" />
+
+  <div id="user-area">
+    <button onclick="window.location.href='http://localhost:5000/logout'">Deconnexion</button>
+  </div>
+
+  <script>
+    fetch('/user')
+      .then(response => response.json())
+      .then(json => {
+        document.getElementById('plop').textContent = json.name;
+        document.getElementById('img_plop').src = json.picture;
+      })
+      .catch(error => {
+        console.error('Erreur lors du fetch :', error);
+      });
+  </script>
+
+</body>
+</html>
