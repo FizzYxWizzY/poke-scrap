@@ -9,7 +9,7 @@ const app = express();
 
 // Session (obligatoire pour Passport)
 app.use(session({
-  secret: 'aChangerPourUneVraiskeyEnProd42',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true
 }));
@@ -25,7 +25,7 @@ passport.deserializeUser((obj, done) => done(null, obj));
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_ID,
   clientSecret: process.env.GOOGLE_SECRET,
-  callbackURL: "http://localhost:5000/auth/google/callback"
+  callbackURL: process.env.CALLBACK_URL
 }, (accessToken, refreshToken, profile, done) => {
   // Ici tu peux enregistrer le user dans ta DB si besoin
   console.log('Access Token:', accessToken);
