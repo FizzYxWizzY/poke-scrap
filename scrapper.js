@@ -93,7 +93,7 @@ const categories = [
 		const [_, cat, prod] = match;
 		categorie = cat;
 		productExt = prod;
-	    console.log(`cat: ${cat}, prod: ${prod}\n`);
+	    // console.log(`cat: ${cat}, prod: ${prod}\n`);
 	  } else {
 		console.log("Not found.");
 	  }
@@ -101,11 +101,11 @@ const categories = [
 	//   categorie = categorie.replace(/ /g,'-');
 	  rawProduct = args[1];
 	  product = rawProduct.replace(/ /g, '-') +  productExt; // '-Booster'
-	  console.log(`product: ${product}\n`);
+	//   console.log(`product: ${product}\n`);
   }
 
   const url = 'https://www.cardmarket.com/fr/Pokemon/Products/' + categorie + '/' + product +'?sellerCountry=4&language=2';
-  console.log(`url: ${url}\n`);
+//   console.log(`url: ${url}\n`);
   const browser = await puppeteer.launch({ headless: true }); // set to false for debugging
   const page = await browser.newPage();
 
@@ -135,6 +135,6 @@ const categories = [
     return items;
   });
 
-  console.log(products);
+  console.log(JSON.stringify(products, null, 2));
   await browser.close();
 })();

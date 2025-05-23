@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Poke-Scrap</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; color:blanchedalmond; background-color: slategrey;}
+    button { font-size: 18px; padding: 10px 20px; margin-top: 50px;}
+	table { font-size: 18px; margin-left: auto; margin-right: auto; border-collapse: collapse;}
+	
+  </style>
+</head>
+<body>
+  <h1><span id="plop"></span></h1>
+  
+
+  <table border="1">
+    <thead>
+      <tr>
+		<th>Ventes</th>
+        <th>Vendeur</th>
+        <th>Prix</th>
+        <th>Quantité</th>
+      </tr>
+    </thead>
+    <tbody id="scrapTableBody">
+      <!-- Les résultats du scrapper apparaîtront ici -->
+    </tbody>
+  </table>
+
+  <div id="user-area">
+    <button onclick="window.location.href='http://localhost:5000/logout'">Deconnexion</button>
+  </div>
+
+  <script>
+    fetch('/run-scrapper') // Mets les bons arguments ici
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById('scrapTableBody');
+        data.forEach(item => {
+          const row = document.createElement('tr');
+
+          const article = document.getElementById('plop');
+		  const names = item.article.split('\n');
+		  article.textContent = names[0] + ".";
+          
+		  const cellSales = document.createElement('td');
+          cellSales.textContent = item.sales;
+          row.appendChild(cellSales);
+
+          const cellName = document.createElement('td');
+          cellName.textContent = item.name;
+          row.appendChild(cellName);
+
+
+          const cellPrice = document.createElement('td');
+          cellPrice.textContent = item.price;
+          row.appendChild(cellPrice);
+
+          const cellAmount = document.createElement('td');
+          cellAmount.textContent = item.amount;
+          row.appendChild(cellAmount);
+
+          tbody.appendChild(row);
+        });
+		// const articleFull = document.querySelector('h1').innerText.trim();
+		// const article = articleFull.split('\n')[0]; // Garde la première ligne
+      })
+      .catch(err => {
+        console.error('Erreur lors du fetch :', err);
+      });
+  </script>
+
+</body>
+</html>

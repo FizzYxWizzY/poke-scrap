@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Connexion Google</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 50px; }
+    body { font-family: sans-serif; text-align: center; padding: 50px; color:blanchedalmond; background-color: slategrey;}
     button { font-size: 18px; padding: 10px 20px; }
   </style>
 </head>
@@ -14,20 +14,5 @@
   <div id="user-area">
     <button onclick="window.location.href='http://localhost:5000/auth/google'">Connexion avec Google</button>
   </div>
-
-  <!-- <script>
-    fetch('/me')
-      .then(res => {
-        if (!res.ok) throw new Error('Non connecté');
-        return res.json();
-      })
-      .then(user => {
-        document.getElementById('user-area').innerHTML = `
-          <p>Connecté en tant que <strong>${user.name}</strong></p>
-          <button onclick="window.location.href='/logout'">Se déconnecter</button>
-        `;
-      })
-      .catch(() => {});
-  </script> -->
 </body>
 </html>
