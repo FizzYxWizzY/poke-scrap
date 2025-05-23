@@ -69,8 +69,13 @@ app.get('/logout', (req, res) => {
 			console.error('Logout error:', err);
 			return res.status(500).send('Logout failed.');
 		}
-		req.session.destroy(() => {
-		res.sendFile("/home/kali/Desktop/poke-scrap/test.html"); // Or any page you want
+		req.session.destroy((err) => {
+			if (err) {
+				console.error('Session destroy error:', err);
+				return res.status(500).send('Session failed.');
+			}
+			res.clearCookie('connect.sid');
+			res.sendFile("/home/kali/Desktop/poke-scrap/test.html"); // Or any page you want
 	  });
 	});
 });
