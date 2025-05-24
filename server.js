@@ -1,3 +1,10 @@
+
+const connectDB = require('./db/database');
+const userRoutes = require('./db/routes/users');
+const sellerRoutes = require('./db/routes/sellers');
+const articleRoutes = require('./db/routes/articles');
+const watchlistRoutes = require('./db/routes/watchlists');
+
 // server.js
 const { spawn } = require('child_process');
 const express = require('express');
@@ -7,6 +14,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 require('dotenv').config();
 const app = express();
+
+connectDB();
 
 // Session (obligatoire pour Passport)
 app.use(session({
@@ -119,5 +128,10 @@ app.get('/run-scrapper', (req, res) => {
 	  });
 });
 
+
+app.use('/api/users', userRoutes);
+app.use('/api/sellers', sellerRoutes);
+app.use('/api/articles', articleRoutes);
+app.use('/api/watchlists', watchlistRoutes);
 
 app.listen(5000, () => console.log('Serveur sur le port 5000'));
