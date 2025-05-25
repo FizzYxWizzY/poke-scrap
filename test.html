@@ -9,10 +9,24 @@
   </style>
 </head>
 <body>
-  <h1>Test Connexion via Google</h1>
+  <h1 id="plop">Test Connexion via Google</h1>
 
   <div id="user-area">
     <button onclick="window.location.href='http://localhost:5000/auth/google'">Connexion avec Google</button>
   </div>
+
+  <script>
+    fetch('/user')
+      .then(response => response.json())
+      .then(json => {
+        if (json.name) {
+          document.getElementById('plop').textContent = json.name;
+        }
+        // document.getElementById('img_plop').src = json.picture;
+      })
+      .catch(error => {
+        console.error('Erreur lors du fetch :', error);
+      });
+  </script>
 </body>
 </html>

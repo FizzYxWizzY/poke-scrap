@@ -1,17 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const ensureAuth = require('../../middlewares/auth');
 
 // Create
-router.post('/', async (req, res) => {
-  try {
-    const user = await User.create(req.body);
-    res.json(user);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+router.post('/post', ensureAuth, async (req, res) => {
+  const userId = req.user._id;
+  // logique pour ajouter un item à la watchlist du user
+  res.json({ message: 'Post effectué pour l\'utilisateur connecté' });
 });
-
 // Read all
 router.get('/', async (req, res) => {
   const users = await User.find();
