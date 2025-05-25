@@ -97,11 +97,13 @@ app.get('/scrapper', (req, res) => {
 
 app.get('/run-scrapper', (req, res) => {
 	// if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
-	const arg1 = req.query.arg1 || 'etb';
+	// const arg1 = req.query.arg1 || 'etb';
 	// const arg1 = 'etb';
-	const arg2 = req.query.arg2 || 'prismatic evolutions';
+	// const arg2 = req.query.arg2 || 'prismatic evolutions';
 	// const arg2 = 'prismatic evolutions';
 
+	const { arg1, arg2 } = req.query;
+	console.log(`arg1 = ${arg1}, arg2 = ${arg2}`);
 	const scrapper = spawn('node', ['scrapper.js', arg1, arg2]);
 
   let output = '';

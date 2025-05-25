@@ -33,7 +33,13 @@
   </div>
 
   <script>
-    fetch('/run-scrapper') // Mets les bons arguments ici
+    let arg1 = "etb";
+    let arg2 = "prismatic evolutions";
+    
+    // arg1 = encodeURIComponent(arg1);
+    // arg2 = encodeURIComponent(arg2);
+
+    fetch(`/run-scrapper?arg1=${arg1}&arg2=${arg2}`) // Mets les bons arguments ici
       .then(res => res.json())
       .then(data => {
         const tbody = document.getElementById('scrapTableBody');
@@ -41,10 +47,10 @@
           const row = document.createElement('tr');
 
           const article = document.getElementById('plop');
-		  const names = item.article.split('\n');
-		  article.textContent = names[0] + ".";
+		      const names = item.article.split('\n');
+		      article.textContent = names[0] + ".";
           
-		  const cellSales = document.createElement('td');
+		      const cellSales = document.createElement('td');
           cellSales.textContent = item.sales;
           row.appendChild(cellSales);
 
@@ -63,8 +69,6 @@
 
           tbody.appendChild(row);
         });
-		// const articleFull = document.querySelector('h1').innerText.trim();
-		// const article = articleFull.split('\n')[0]; // Garde la première ligne
       })
       .catch(err => {
         console.error('Erreur lors du fetch :', err);
