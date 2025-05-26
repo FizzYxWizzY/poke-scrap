@@ -73,85 +73,6 @@ app.get('/scrapper', (req, res) => {
 	
 });
 
-// app.get('/run-scrapper', (req, res) => {
-	
-// 	const { arg1, arg2 } = req.query;
-// 	console.log(`arg1 = ${arg1}, arg2 = ${arg2}`);
-
-// 	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-
-// 	Article.find({
-// 		article: arg2,
-// 		articleLanguage: "fr",
-// 		articleCategorie: arg1,
-// 		sellerCountry: "ch",
-// 		lastUpdate: { $gt: fiveMinutesAgo }
-// 	})
-// 	.then(async foundArticles => {
-// 		if (foundArticles.length > 0) {
-// 			console.log(`data came from article db.`);
-// 			return res.json(foundArticles);
-// 		}
-	
-
-// 	const scrapper = spawn('node', ['scrapper.js', arg1, arg2]);
-
-// 	let output = '';
-// 	scrapper.stdout.on('data', data => {
-// 		output += data.toString();
-// 	});
-
-// 	scrapper.stderr.on('data', data => {
-// 		console.error(`Erreur scrapper : ${data}`);
-// 	});
-
-// 	scrapper.on('close', code =>  {
-// 		if (code !== 0) return res.status(500).send('Erreur du scrapper');
-		
-// 		try {
-// 			const result = JSON.parse(output);
-// 			res.json(result);
-// 		} catch (err) {
-// 			res.status(500).send('Erreur de parsing JSON : ' + err.message);
-// 		}
-// 		for (const article of res) {
-// 			const exists = article.findOneAndUpdate(
-// 			{
-// 				articleName: arg2,
-// 				articlePrice: article.price,
-// 				articleLanguage: "fr",
-// 				articleCategorie: arg1,
-// 				sellerName: article.name,
-// 				sellerCountry: "ch"
-// 			},
-// 			{
-// 				articleAmount: article.amount,
-// 				sellerLevel: article.sales,
-// 				lastUpdate: Date.now()
-// 			});
-// 			if (!exists) {
-// 				article.create(
-// 				{
-// 					articleName: article.article,
-// 					articlePrice: article.price,
-// 					articleAmount: article.amount,
-// 					articleLanguage: "fr",
-// 					articleCategorie: article.categorie,
-// 					sellerName: article.name,
-// 					sellerLevel: article.sales,
-// 					sellerCountry: "ch"
-// 				});
-// 			}
-// 		}
-		
-// 		Article.deleteMany({
-// 			lastUpdate: { $lt: fiveMinutesAgo }
-// 		});
-		
-// 		console.log(`existing data updated from article db, and new articles.`);
-// 	});
-// });
-
 app.get('/run-scrapper', async (req, res) => {
 	const { arg1, arg2 } = req.query;
 	console.log(`arg1 = ${arg1}, arg2 = ${arg2}`);
@@ -168,7 +89,7 @@ app.get('/run-scrapper', async (req, res) => {
 		});
 
 		if (articles.length > 0) {
-			console.log(`✅ Données récentes trouvées dans la base.`);
+			console.log(`✅ Données récentes trouvées dans la base. (${new Date().toISOString()})`);
 			// console.log('Réponse envoyée au frontend :', JSON.stringify(articles || result, null, 2));
 			return res.json(articles); // stoppe ici si données présentes
 		}
@@ -176,7 +97,7 @@ app.get('/run-scrapper', async (req, res) => {
 		console.error('❌ Erreur lors de la recherche MongoDB :', err.message);
 		return res.status(500).send('Erreur lors de la recherche en base.');
 	}
-	console.log(`❌ pas de données récentes trouvées dans la base.`);
+	console.log(`❌ pas de données récentes trouvées dans la base. (${new Date().toISOString()})`);
 	// ⚠️ Si on arrive ici, pas de données fraîches → on lance le scrapper
 	const scrapper = spawn('node', ['scrapper.js', arg1, arg2]);
 
@@ -227,7 +148,7 @@ app.get('/run-scrapper', async (req, res) => {
 				lastUpdate: { $lt: fiveMinutesAgo }
 			});
 
-			console.log('✅ Articles mis à jour et nettoyés.');
+			console.log(`✅ Articles mis à jour et nettoyés. (${new Date().toISOString()})`);
 			try {
 				const art = await Article.find({
 					articleName: arg2,
@@ -238,7 +159,7 @@ app.get('/run-scrapper', async (req, res) => {
 				});
 		
 				if (art.length > 0) {
-					console.log(`✅ Données récentes trouvées dans la base.`);
+					console.log(`✅ Données récentes trouvées dans la base. (${new Date().toISOString()})`);
 					// console.log('Réponse envoyée au frontend :', JSON.stringify(art, null, 2));
 					return res.json(art); // stoppe ici si données présentes
 				}
@@ -260,4 +181,4 @@ app.use('/api/sellers', sellerRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/watchlists', watchlistRoutes);
 
-app.listen(5000, () => console.log('Serveur sur le port 5000'));
+app.listen(5000, () => console.log(`Serveur sur le port 5000 (${new Date().toISOString()})`));
