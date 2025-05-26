@@ -11,7 +11,7 @@ passport.use(new GoogleStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
 	// console.log('Access Token:', accessToken);
 	const prof = profile._json;
-	console.log("PROF:", prof);
+	// console.log("PROF:", prof);
 	const googleId = prof.sub;
 	const displayName = prof.name;
 	const email = prof.email;
@@ -26,10 +26,9 @@ passport.use(new GoogleStrategy({
 	);
 	if (existingUser) {
 		console.log(`updating existing user!`);
-		console.log(`userPicture: ${existingUser.userPicture}`);
 		return done(null, existingUser);
 	}
-		const newUser =  await User.create({
+	const newUser =  await User.create({
 		googleId: googleId,
 		userName: displayName,
 		userEmail: email,

@@ -6,4 +6,4 @@ const sellerSchema = new mongoose.Schema({
 	sellerCountry: { type: String }
   });
   
-  module.exports = mongoose.model('Seller', sellerSchema);
+  module.exports = mongoose.model('Seller', sellerSchema); 

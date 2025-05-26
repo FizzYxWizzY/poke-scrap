@@ -48,24 +48,24 @@
           const row = document.createElement('tr');
 
           const article = document.getElementById('plop');
-		      const names = item.article.split('\n');
-		      article.textContent = names[0] + ".";
+		      const name = item.articleCategorie + ' ' + item.articleName;
+		      article.textContent = name + ".";
           
 		      const cellSales = document.createElement('td');
-          cellSales.textContent = item.sales;
+          cellSales.textContent = item.sellerLevel;
           row.appendChild(cellSales);
 
           const cellName = document.createElement('td');
-          cellName.textContent = item.name;
+          cellName.textContent = item.sellerName;
           row.appendChild(cellName);
 
 
           const cellPrice = document.createElement('td');
-          cellPrice.textContent = item.price;
+          cellPrice.textContent = item.articlePrice;
           row.appendChild(cellPrice);
 
           const cellAmount = document.createElement('td');
-          cellAmount.textContent = item.amount;
+          cellAmount.textContent = item.articleAmount;
           row.appendChild(cellAmount);
 
           tbody.appendChild(row);

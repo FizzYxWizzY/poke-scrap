@@ -5,6 +5,7 @@ const sellerRoutes = require('./db/routes/sellers');
 const articleRoutes = require('./db/routes/articles');
 const watchlistRoutes = require('./db/routes/watchlists');
 require('./auth/google');
+const Article = require('./db/models/Article');
 
 // server.js
 const { spawn } = require('child_process');
@@ -26,39 +27,6 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Serialisation
-// passport.serializeUser((user, done) => done(null, user));
-// passport.deserializeUser((obj, done) => done(null, obj));
-
-// let googleId = "";
-// let displayName = "";
-// let email = "";
-// let picture = "";
-let prof = "";
-
-// Google OAuth Strategy
-// passport.use(new GoogleStrategy({
-// 	clientID: process.env.GOOGLE_ID,
-// 	clientSecret: process.env.GOOGLE_SECRET,
-// 	callbackURL: process.env.CALLBACK_URL
-// }, async (accessToken, refreshToken, profile, done) => {
-// 	// console.log('Access Token:', accessToken);
-// 	prof = profile._json;
-// 	googleId = prof.sub;
-// 	displayName = prof.name;
-// 	email = prof.email;
-// 	picture = prof.picture;
-// 	const existingUser = await User.findOne({ googleId: profile.id });
-// 	if (existingUser) return done(null, existingUser);
-// 	const newUser =  await User.create({
-// 		googleId: googleId,
-// 		name: displayName,
-// 		email: email,
-// 		picture: picture
-// 	});
-// 	return done(null, profile);
-// }));
 
 // Routes OAuth
 app.get('/auth/google',
@@ -105,43 +73,186 @@ app.get('/scrapper', (req, res) => {
 	
 });
 
-app.get('/run-scrapper', (req, res) => {
-	// if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
-	// const arg1 = req.query.arg1 || 'etb';
-	// const arg1 = 'etb';
-	// const arg2 = req.query.arg2 || 'prismatic evolutions';
-	// const arg2 = 'prismatic evolutions';
+// app.get('/run-scrapper', (req, res) => {
+	
+// 	const { arg1, arg2 } = req.query;
+// 	console.log(`arg1 = ${arg1}, arg2 = ${arg2}`);
 
+// 	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+// 	Article.find({
+// 		article: arg2,
+// 		articleLanguage: "fr",
+// 		articleCategorie: arg1,
+// 		sellerCountry: "ch",
+// 		lastUpdate: { $gt: fiveMinutesAgo }
+// 	})
+// 	.then(async foundArticles => {
+// 		if (foundArticles.length > 0) {
+// 			console.log(`data came from article db.`);
+// 			return res.json(foundArticles);
+// 		}
+	
+
+// 	const scrapper = spawn('node', ['scrapper.js', arg1, arg2]);
+
+// 	let output = '';
+// 	scrapper.stdout.on('data', data => {
+// 		output += data.toString();
+// 	});
+
+// 	scrapper.stderr.on('data', data => {
+// 		console.error(`Erreur scrapper : ${data}`);
+// 	});
+
+// 	scrapper.on('close', code =>  {
+// 		if (code !== 0) return res.status(500).send('Erreur du scrapper');
+		
+// 		try {
+// 			const result = JSON.parse(output);
+// 			res.json(result);
+// 		} catch (err) {
+// 			res.status(500).send('Erreur de parsing JSON : ' + err.message);
+// 		}
+// 		for (const article of res) {
+// 			const exists = article.findOneAndUpdate(
+// 			{
+// 				articleName: arg2,
+// 				articlePrice: article.price,
+// 				articleLanguage: "fr",
+// 				articleCategorie: arg1,
+// 				sellerName: article.name,
+// 				sellerCountry: "ch"
+// 			},
+// 			{
+// 				articleAmount: article.amount,
+// 				sellerLevel: article.sales,
+// 				lastUpdate: Date.now()
+// 			});
+// 			if (!exists) {
+// 				article.create(
+// 				{
+// 					articleName: article.article,
+// 					articlePrice: article.price,
+// 					articleAmount: article.amount,
+// 					articleLanguage: "fr",
+// 					articleCategorie: article.categorie,
+// 					sellerName: article.name,
+// 					sellerLevel: article.sales,
+// 					sellerCountry: "ch"
+// 				});
+// 			}
+// 		}
+		
+// 		Article.deleteMany({
+// 			lastUpdate: { $lt: fiveMinutesAgo }
+// 		});
+		
+// 		console.log(`existing data updated from article db, and new articles.`);
+// 	});
+// });
+
+app.get('/run-scrapper', async (req, res) => {
 	const { arg1, arg2 } = req.query;
 	console.log(`arg1 = ${arg1}, arg2 = ${arg2}`);
+
+	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+	try {
+		const articles = await Article.find({
+			articleName: arg2,
+			articleLanguage: "fr",
+			articleCategorie: arg1,
+			sellerCountry: "ch",
+			lastUpdate: { $gt: fiveMinutesAgo }
+		});
+
+		if (articles.length > 0) {
+			console.log(`✅ Données récentes trouvées dans la base.`);
+			// console.log('Réponse envoyée au frontend :', JSON.stringify(articles || result, null, 2));
+			return res.json(articles); // stoppe ici si données présentes
+		}
+	} catch (err) {
+		console.error('❌ Erreur lors de la recherche MongoDB :', err.message);
+		return res.status(500).send('Erreur lors de la recherche en base.');
+	}
+	console.log(`❌ pas de données récentes trouvées dans la base.`);
+	// ⚠️ Si on arrive ici, pas de données fraîches → on lance le scrapper
 	const scrapper = spawn('node', ['scrapper.js', arg1, arg2]);
 
 	let output = '';
-	scrapper.stdout.on('data', data => {
-		output += data.toString();
-	});
+	scrapper.stdout.on('data', data => output += data.toString());
+	scrapper.stderr.on('data', data => console.error(`Erreur scrapper : ${data}`));
 
-	scrapper.stderr.on('data', data => {
-		console.error(`Erreur scrapper : ${data}`);
-	});
-
-	scrapper.stderr.on('data', data => {
-		console.error(`Erreur scrapper : ${data}`);
-	});
-
-	scrapper.on('close', code => {
+	scrapper.on('close', async code => {
 		if (code !== 0) return res.status(500).send('Erreur du scrapper');
-	
+
 		try {
 			const result = JSON.parse(output);
-			res.json(result);
+
+			// Nettoyage des données
+			const cleanedArticles = result.map(article => ({
+				articleName: arg2,
+				articlePrice: article.price,
+				articleAmount: article.amount,
+				articleLanguage: "fr",
+				articleCategorie: arg1,
+				sellerName: article.name,
+				sellerLevel: article.sales,
+				sellerCountry: "ch",
+				lastUpdate: Date.now()
+			}));
+
+			// Update ou insert
+			for (const article of cleanedArticles) {
+				await Article.findOneAndUpdate(
+					{
+						articleName: article.articleName,
+						articlePrice: article.articlePrice,
+						articleLanguage: article.articleLanguage,
+						articleCategorie: article.articleCategorie,
+						sellerName: article.sellerName,
+						sellerCountry: article.sellerCountry
+					},
+					article,
+					{ upsert: true }
+				);
+			}
+
+			// Suppression des anciens
+			await Article.deleteMany({
+				articleName: arg2,
+				articleLanguage: "fr",
+				articleCategorie: arg1,
+				lastUpdate: { $lt: fiveMinutesAgo }
+			});
+
+			console.log('✅ Articles mis à jour et nettoyés.');
+			try {
+				const art = await Article.find({
+					articleName: arg2,
+					articleLanguage: "fr",
+					articleCategorie: arg1,
+					sellerCountry: "ch",
+					lastUpdate: { $gt: fiveMinutesAgo }
+				});
+		
+				if (art.length > 0) {
+					console.log(`✅ Données récentes trouvées dans la base.`);
+					// console.log('Réponse envoyée au frontend :', JSON.stringify(art, null, 2));
+					return res.json(art); // stoppe ici si données présentes
+				}
+			} catch (err) {
+				console.error('❌ Erreur lors de la recherche MongoDB :', err.message);
+				return res.status(500).send('Erreur lors de la recherche en base.');
+			}
+
 		} catch (err) {
-			res.status(500).send('Erreur de parsing JSON : ' + err.message);
+			console.error('❌ Erreur parsing JSON ou enregistrement:', err.message);
+			res.status(500).send('Erreur parsing JSON : ' + err.message);
 		}
-	  });
+	});
 });
-
-
 
 
 app.use('/api/users', userRoutes);
