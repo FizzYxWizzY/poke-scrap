@@ -71,6 +71,29 @@ const categories = [
 	["booster", "Boosters", "-Booster"]
 ];
 
+const languages = [
+	["english", "1", "en"],
+	["french", "2", "fr"],
+	["german", "3", "de"],
+	["spanish", "4", "es"],
+	["italian", "5", "it"],
+	["portugese", "8", "pt"],
+];
+
+const countries = [
+	["france", "12", "fr"],
+	["germany", "7", "de"],
+	["austria", "1", "at"],
+	["belgium", "2", "be"],
+	["danemark", "8", "dk"],
+	["spain", "10", "es"],
+	["finland", "11", "fl"],
+	["greece", "14", "gr"],
+	["italy", "17", "it"],
+	["switzerland", "4", "ch"],
+	["britain", "13", "uk"],
+	["portugal", "26", "pt"],
+];
 
 (async () => {
   
@@ -80,15 +103,19 @@ const categories = [
   let productExt = '';
   let categorie = '';
   let rawProduct = '';
+  let lang = '';
+  let langExt = '';
+  let country = '';
+  let countryExt = '';
   for (i = 0; args[i]; ++i) ;
-  if (i != 2) {
-	  return console.log("missinput! missinput!");
+  if (i != 4) {
+	  return console.log(`mis.${i}.sinput! missinput!`);
 	//   rawProduct = args.join('-').trim();
     //   product = rawProduct + '-Elite-Trainer-Box';
   } else {
-	  const input = args[0];
+	  let input = args[0];
 
-	  const match = categories.find(([name]) => name === input.toLowerCase());
+	  let match = categories.find(([name]) => name === input.toLowerCase());
 	  if (match) {
 		const [_, cat, prod] = match;
 		categorie = cat;
@@ -102,10 +129,32 @@ const categories = [
 	  rawProduct = args[1];
 	  product = rawProduct.replace(/ /g, '-') +  productExt; // '-Booster'
 	//   console.log(`product: ${product}\n`);
+
+	input = args[3]
+	match = languages.find(([name]) => name === input.toLowerCase());
+	if (match) {
+		const [_, uri, ext] = match;
+		lang = uri;
+		langExt = ext;
+	    // console.log(`cat: ${cat}, prod: ${prod}\n`);
+	  } else {
+		console.log("Not found.");
+	  }
+	
+	  input = args[2]
+	  match = countries.find(([name]) => name === input.toLowerCase());
+	  if (match) {
+		  const [_, uri, ext] = match;
+		  country = uri;
+		  countryExt = ext;
+		  // console.log(`cat: ${cat}, prod: ${prod}\n`);
+		} else {
+		  console.log("Not found.");
+		}
   }
 
-  const url = 'https://www.cardmarket.com/fr/Pokemon/Products/' + categorie + '/' + product +'?sellerCountry=4&language=2';
-//   console.log(`url: ${url}\n`);
+  const url = 'https://www.cardmarket.com/fr/Pokemon/Products/' + categorie + '/' + product +'?' + 'sellerCountry=' + country + '&' + 'language=' + lang;
+//   console.log(`\n\nurl: ${url}\n\n\n`);
   const browser = await puppeteer.launch({ headless: true }); // set to false for debugging
   const page = await browser.newPage();
 

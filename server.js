@@ -74,17 +74,17 @@ app.get('/scrapper', (req, res) => {
 });
 
 app.get('/run-scrapper', async (req, res) => {
-	const { arg1, arg2 } = req.query;
-	console.log(`arg1 = ${arg1}, arg2 = ${arg2}`);
+	const { arg1, arg2, arg3, arg4 } = req.query;
+	console.log(`arg1 = ${arg1}, arg2 = ${arg2}, arg3 = ${arg3}, arg4 = ${arg4} `);
 
 	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
 	try {
 		const articles = await Article.find({
 			articleName: arg2,
-			articleLanguage: "fr",
+			articleLanguage: arg4,
 			articleCategorie: arg1,
-			sellerCountry: "ch",
+			sellerCountry: arg3,
 			lastUpdate: { $gt: fiveMinutesAgo }
 		});
 
@@ -99,7 +99,7 @@ app.get('/run-scrapper', async (req, res) => {
 	}
 	console.log(`❌ pas de données récentes trouvées dans la base. (${new Date().toISOString()})`);
 	// ⚠️ Si on arrive ici, pas de données fraîches → on lance le scrapper
-	const scrapper = spawn('node', ['scrapper.js', arg1, arg2]);
+	const scrapper = spawn('node', ['scrapper.js', arg1, arg2, arg3, arg4]);
 
 	let output = '';
 	scrapper.stdout.on('data', data => output += data.toString());
@@ -116,11 +116,11 @@ app.get('/run-scrapper', async (req, res) => {
 				articleName: arg2,
 				articlePrice: article.price,
 				articleAmount: article.amount,
-				articleLanguage: "fr",
+				articleLanguage: arg4,
 				articleCategorie: arg1,
 				sellerName: article.name,
 				sellerLevel: article.sales,
-				sellerCountry: "ch",
+				sellerCountry: arg3,
 				lastUpdate: Date.now()
 			}));
 
@@ -143,7 +143,7 @@ app.get('/run-scrapper', async (req, res) => {
 			// Suppression des anciens
 			await Article.deleteMany({
 				articleName: arg2,
-				articleLanguage: "fr",
+				articleLanguage: arg4,
 				articleCategorie: arg1,
 				lastUpdate: { $lt: fiveMinutesAgo }
 			});
@@ -152,9 +152,9 @@ app.get('/run-scrapper', async (req, res) => {
 			try {
 				const art = await Article.find({
 					articleName: arg2,
-					articleLanguage: "fr",
+					articleLanguage: arg4,
 					articleCategorie: arg1,
-					sellerCountry: "ch",
+					sellerCountry: arg3,
 					lastUpdate: { $gt: fiveMinutesAgo }
 				});
 		

@@ -17,10 +17,10 @@
   <table border="1">
     <thead>
       <tr>
-		<th>Ventes</th>
-        <th>Vendeur</th>
-        <th>Prix</th>
-        <th>Quantité</th>
+		<th>Sales</th>
+        <th>Sellers</th>
+        <th>Prices</th>
+        <th>Quantities</th>
       </tr>
     </thead>
     <tbody id="scrapTableBody">
@@ -34,14 +34,27 @@
   </div>
 
   <script>
+
+    // arg1 => categorie du produit (etb ou booster)
+    // arg2 => nom du produit 
+    // (pour le moi du futur: arg3 => country et arg4 => langue)
+
     let arg1 = "etb";
+    // let arg1 = "booster";
     let arg2 = "prismatic evolutions";
     // let arg2 = "151";
+    // let arg2 = "Destined Rivals";
     
+    // let arg3 = "switzerland";
+    let arg3 = "france";
+
+    // let arg4 = "french";
+    let arg4 = "english";
+
     // arg1 = encodeURIComponent(arg1);
     // arg2 = encodeURIComponent(arg2);
 
-    fetch(`/run-scrapper?arg1=${encodeURIComponent(arg1)}&arg2=${encodeURIComponent(arg2)}`) // Mets les bons arguments ici
+    fetch(`/run-scrapper?arg1=${encodeURIComponent(arg1)}&arg2=${encodeURIComponent(arg2)}&arg3=${encodeURIComponent(arg3)}&arg4=${encodeURIComponent(arg4)}`) // Mets les bons arguments ici
       .then(res => res.json())
       .then(data => {
         const tbody = document.getElementById('scrapTableBody');
@@ -50,7 +63,7 @@
 
           const article = document.getElementById('plop');
 		      const name = item.articleCategorie + ': ' + item.articleName;
-		      article.textContent = name + ".";
+		      article.textContent = name + "." + "(langue: " + arg4 + ", pays: " + arg3 + ").";
           
 		      const cellSales = document.createElement('td');
           cellSales.textContent = item.sellerLevel;
