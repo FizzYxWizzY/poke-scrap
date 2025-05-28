@@ -59,12 +59,10 @@ CATEGORIES:
 			Card-Scanners
 		Apparel:
 			Apparel
-
-
-
 */
 
-// j ai la flemme et jsp les quelles sont worth a prendre mdr
+// j ai la flemme et jsp les quelles sont worth a prendre pour les categories mdr
+// le reste est full ;)
 
 const categories = [
 	["etb", "Elite-Trainer-Boxes", "-Elite-Trainer-Box"],
@@ -115,8 +113,11 @@ const countries = [
 	["spain", "10", "es"],
 	["sweden", "28", "se"],
 	["switzerland", "4", "ch"],
-	["britain", "13", "uk"]
+	["united kingdom", "13", "uk"]
 ];
+
+// UPGRADE:	add proxy usage like tor etc...
+// 			so i could escape possible ip ban
 
 (async () => {
   
@@ -131,11 +132,11 @@ const countries = [
 	let country = '';
 	let countryExt = '';
 	
-	for (i = 0; args[i]; ++i) ;
-	if (i != 4) {
-		return console.log(`mis.${i}.sinput! missinput!`);
-		// rawProduct = args.join('-').trim();
-    	// product = rawProduct + '-Elite-Trainer-Box';
+	// for (i = 0; args[i]; ++i);
+	// console.log(`lenght= ${args.length}.`);
+	if (args.length != 4) {
+		// return console.log(`missinput! missinput!`);
+		return 1;
 	} else {
 		let input = args[0];
 
@@ -154,17 +155,6 @@ const countries = [
 		product = rawProduct.replace(/ /g, '-') +  productExt; // '-Booster'
 		//   console.log(`product: ${product}\n`);
 
-		input = args[3]
-		match = languages.find(([name]) => name === input.toLowerCase());
-		if (match) {
-			const [_, uri, ext] = match;
-			lang = uri;
-			langExt = ext;
-	    	// console.log(`cat: ${lang}, prod: ${langExt}\n`);
-		} else {
-			console.log("Not found.");
-		}
-	
 		input = args[2]
 		match = countries.find(([name]) => name === input.toLowerCase());
 		if (match) {
@@ -172,6 +162,17 @@ const countries = [
 			country = uri;
 			countryExt = ext;
 			// console.log(`cat: ${country}, prod: ${countryExt}\n`);
+		} else {
+			console.log("Not found.");
+		}
+
+		input = args[3]
+		match = languages.find(([name]) => name === input.toLowerCase());
+		if (match) {
+			const [_, uri, ext] = match;
+			lang = uri;
+			langExt = ext;
+	    	// console.log(`cat: ${lang}, prod: ${langExt}\n`);
 		} else {
 			console.log("Not found.");
 		}
@@ -207,7 +208,6 @@ const countries = [
     	});
     	return items;
 	});
-
-  console.log(JSON.stringify(products, null, 2));
-  await browser.close();
+	console.log(JSON.stringify(products, null, 2));
+	await browser.close();
 })();
