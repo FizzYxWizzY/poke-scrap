@@ -77,112 +77,136 @@ const languages = [
 	["german", "3", "de"],
 	["spanish", "4", "es"],
 	["italian", "5", "it"],
-	["portugese", "8", "pt"],
+	["portugese", "8", "pt"]
 ];
 
 const countries = [
-	["france", "12", "fr"],
-	["germany", "7", "de"],
 	["austria", "1", "at"],
 	["belgium", "2", "be"],
-	["danemark", "8", "dk"],
-	["spain", "10", "es"],
+	["bulgaria", "3", "bg"],
+	["canada", "33", "ca"],
+	["croatia", "35", "cr"],
+	["cyprus", "5", "cy"],
+	["czech republic", "6", "cz"],
+	["denmark", "8", "dk"],
+	["estonia", "9", "ee"],
 	["finland", "11", "fl"],
+	["france", "12", "fr"],
+	["germany", "7", "de"],
 	["greece", "14", "gr"],
+	["hungary", "15", "hu"],
+	["iceland", "37", "is"],
+	["ireland", "16", "ie"],
 	["italy", "17", "it"],
-	["switzerland", "4", "ch"],
-	["britain", "13", "uk"],
+	["japan", "36", "jp"],
+	["latvia", "21", "lv"],
+	["liechtenstein", "18", "li"],
+	["lithuania", "19", "lt"],
+	["luxembourg", "20", "lu"],
+	["malta", "21", "mt"],
+	["netherland", "23", "nl"],
+	["norway", "24", "no"],
+	["poland", "25", "pl"],
 	["portugal", "26", "pt"],
+	["romania", "27", "ro"],
+	["singapore", "29", "sg"],
+	["slovakia", "31", "sk"],
+	["slovenia", "30", "sl"],
+	["spain", "10", "es"],
+	["sweden", "28", "se"],
+	["switzerland", "4", "ch"],
+	["britain", "13", "uk"]
 ];
 
 (async () => {
   
-  let args = process.argv.slice(2);
-  let i = 0;
-  let product = '';
-  let productExt = '';
-  let categorie = '';
-  let rawProduct = '';
-  let lang = '';
-  let langExt = '';
-  let country = '';
-  let countryExt = '';
-  for (i = 0; args[i]; ++i) ;
-  if (i != 4) {
-	  return console.log(`mis.${i}.sinput! missinput!`);
-	//   rawProduct = args.join('-').trim();
-    //   product = rawProduct + '-Elite-Trainer-Box';
-  } else {
-	  let input = args[0];
-
-	  let match = categories.find(([name]) => name === input.toLowerCase());
-	  if (match) {
-		const [_, cat, prod] = match;
-		categorie = cat;
-		productExt = prod;
-	    // console.log(`cat: ${cat}, prod: ${prod}\n`);
-	  } else {
-		console.log("Not found.");
-	  }
-	  
-	//   categorie = categorie.replace(/ /g,'-');
-	  rawProduct = args[1];
-	  product = rawProduct.replace(/ /g, '-') +  productExt; // '-Booster'
-	//   console.log(`product: ${product}\n`);
-
-	input = args[3]
-	match = languages.find(([name]) => name === input.toLowerCase());
-	if (match) {
-		const [_, uri, ext] = match;
-		lang = uri;
-		langExt = ext;
-	    // console.log(`cat: ${cat}, prod: ${prod}\n`);
-	  } else {
-		console.log("Not found.");
-	  }
+	let args = process.argv.slice(2);
+	let i = 0;
+	let product = '';
+	let productExt = '';
+	let categorie = '';
+	let rawProduct = '';
+	let lang = '';
+	let langExt = '';
+	let country = '';
+	let countryExt = '';
 	
-	  input = args[2]
-	  match = countries.find(([name]) => name === input.toLowerCase());
-	  if (match) {
-		  const [_, uri, ext] = match;
-		  country = uri;
-		  countryExt = ext;
-		  // console.log(`cat: ${cat}, prod: ${prod}\n`);
+	for (i = 0; args[i]; ++i) ;
+	if (i != 4) {
+		return console.log(`mis.${i}.sinput! missinput!`);
+		// rawProduct = args.join('-').trim();
+    	// product = rawProduct + '-Elite-Trainer-Box';
+	} else {
+		let input = args[0];
+
+		let match = categories.find(([name]) => name === input.toLowerCase());
+		if (match) {
+			const [_, cat, prod] = match;
+			categorie = cat;
+			productExt = prod;
+	    	// console.log(`cat: ${cat}, prod: ${prod}\n`);
 		} else {
-		  console.log("Not found.");
+			console.log("Not found.");
 		}
-  }
+	  
+		//   categorie = categorie.replace(/ /g,'-');
+		rawProduct = args[1];
+		product = rawProduct.replace(/ /g, '-') +  productExt; // '-Booster'
+		//   console.log(`product: ${product}\n`);
 
-  const url = 'https://www.cardmarket.com/fr/Pokemon/Products/' + categorie + '/' + product +'?' + 'sellerCountry=' + country + '&' + 'language=' + lang;
-//   console.log(`\n\nurl: ${url}\n\n\n`);
-  const browser = await puppeteer.launch({ headless: true }); // set to false for debugging
-  const page = await browser.newPage();
+		input = args[3]
+		match = languages.find(([name]) => name === input.toLowerCase());
+		if (match) {
+			const [_, uri, ext] = match;
+			lang = uri;
+			langExt = ext;
+	    	// console.log(`cat: ${lang}, prod: ${langExt}\n`);
+		} else {
+			console.log("Not found.");
+		}
+	
+		input = args[2]
+		match = countries.find(([name]) => name === input.toLowerCase());
+		if (match) {
+			const [_, uri, ext] = match;
+			country = uri;
+			countryExt = ext;
+			// console.log(`cat: ${country}, prod: ${countryExt}\n`);
+		} else {
+			console.log("Not found.");
+		}
+	}
 
-  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
+	const url = 'https://www.cardmarket.com/fr/Pokemon/Products/' + categorie + '/' + product +'?' + 'sellerCountry=' + country + '&' + 'language=' + lang;
+	//   console.log(`\n\nurl: ${url}\n\n\n`);
+	const browser = await puppeteer.launch({ headless: true }); // set to false for debugging
+	const page = await browser.newPage();
 
-  await page.goto(url, { waitUntil: 'domcontentloaded' });
+	await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
 
-  // Wait for a known wrapper that shows listings
-  await page.waitForSelector('.table-body');
+	await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-  const products = await page.evaluate(() => {
-    const items = [];
-    const listings = document.querySelectorAll('.table-body .row');
+	// Wait for a known wrapper that shows listings
+	await page.waitForSelector('.table-body');
 
-    listings.forEach(row => {
-      
-	  const article = document.querySelector('h1').innerText.trim(); // Only 1 product name on the page
-      const seller = row.querySelector('.d-flex span')?.innerText.trim();
-	  const parts = seller.split('\n');
-      const name = parts.pop().trim(); // last part is the name
-      const sales = parts.join('').trim(); // rest is the number, e.g., '1K' or '4'
-	  const price = row.querySelector('.price-container span')?.innerText.trim();
-	  const amount = row.querySelector('.amount-container span')?.innerText.trim();
-      if (name && price) items.push({ article, name, sales, price , amount});
-    });
+	const products = await page.evaluate(() => {
+    	const items = [];
+		const listings = document.querySelectorAll('.table-body .row');
 
-    return items;
-  });
+    	listings.forEach(row => {
+			const article = document.querySelector('h1').innerText.trim(); // Only 1 product name on the page
+    		const seller = row.querySelector('.d-flex span')?.innerText.trim();
+			const parts = seller.split('\n');
+    		const name = parts.pop().trim(); // last part is the name
+    		const sales = parts.join('').trim(); // rest is the number, e.g., '1K' or '4'
+			const price = row.querySelector('.price-container span')?.innerText.trim();
+			const amount = row.querySelector('.amount-container span')?.innerText.trim();
+    		if (name && price) {
+				items.push({ article, name, sales, price , amount});
+			}
+    	});
+    	return items;
+	});
 
   console.log(JSON.stringify(products, null, 2));
   await browser.close();
