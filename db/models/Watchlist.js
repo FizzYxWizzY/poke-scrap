@@ -1,13 +1,24 @@
 const mongoose = require('mongoose');
 
 const watchlistSchema = new mongoose.Schema({
-	user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-	article: { type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true },
+	userEmail: { type: String, required: true },
+	articleName: { type: String, required: true },
+	articleLanguage: { type: String, required: true },
+	articleCategorie: { type: String, required: true },
+	sellerCountry: { type: String, required: true },
 	targetPrice: { type: Number, required: true }
-}, {
-	timestamps: true
 });
-  
-watchlistSchema.index({ user: 1, article: 1 }, { unique: true });
-  
+
+// ✅ Crée un index unique sur l'ensemble des champs clés (hors prix)
+watchlistSchema.index(
+	{
+	  userEmail: 1,
+	  articleName: 1,
+	  articleLanguage: 1,
+	  articleCategorie: 1,
+	  sellerCountry: 1
+	},
+	{ unique: true }
+  );
+
 module.exports = mongoose.model('Watchlist', watchlistSchema);

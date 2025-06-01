@@ -132,10 +132,7 @@ const countries = [
 	let country = '';
 	let countryExt = '';
 	
-	// for (i = 0; args[i]; ++i);
-	// console.log(`lenght= ${args.length}.`);
 	if (args.length != 4) {
-		// return console.log(`missinput! missinput!`);
 		return 1;
 	} else {
 		let input = args[0];
@@ -150,7 +147,6 @@ const countries = [
 			console.log("Not found.");
 		}
 	  
-		//   categorie = categorie.replace(/ /g,'-');
 		rawProduct = args[1];
 		product = rawProduct.replace(/ /g, '-') +  productExt; // '-Booster'
 		//   console.log(`product: ${product}\n`);
@@ -180,7 +176,15 @@ const countries = [
 
 	const url = 'https://www.cardmarket.com/fr/Pokemon/Products/' + categorie + '/' + product +'?' + 'sellerCountry=' + country + '&' + 'language=' + lang;
 	//   console.log(`\n\nurl: ${url}\n\n\n`);
-	const browser = await puppeteer.launch({ headless: true }); // set to false for debugging
+	const browser = await puppeteer.launch({
+		headless: true,
+		args: [ // pour etre plus discret (idk if tor proxy blocked or it just doesnt work)
+			// '--proxy-server=socks5://127.0.0.1:9050',
+			'--no-sandbox',
+			'--disable-setuid-sandbox',
+			'--disable-blink-features=AutomationControlled'
+		  ]
+	}); // set to false for debugging
 	const page = await browser.newPage();
 
 	await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Recherche d'article</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 14px;
+      text-align: center;
+      padding: 50px;
+      color: blanchedalmond;
+      background-color: slategrey;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      margin-top: 20px;
+    }
+
+    table {
+      font-size: 14px;
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+
+    th, td {
+      border: 1px solid white;
+      padding: 8px;
+    }
+
+    th {
+      background-color: darkslategray;
+      color: white;
+    }
+
+    td {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Recherche Pokémon</h1>
+
+  <form id="search-form" method="get" action="/api/articles">
+    <label for="category">Catégorie :</label>
+    <select id="category" name="category">
+      <option value="">-- Toutes --</option>
+      <option value="etb">ETB</option>
+      <option value="booster">Booster</option>
+    </select>
+
+    <label for="language">Langue :</label>
+    <select id="language" name="language">
+      <option value="">-- Toutes --</option>
+      <option value="french">Français</option>
+      <option value="english">Anglais</option>
+      <option value="spanish">Espagnol</option>
+    </select>
+
+    <label for="country">Pays :</label>
+    <select id="country" name="country">
+      <option value="">-- Tous --</option>
+      <option value="france">France</option>
+      <option value="switzerland">Suisse</option>
+      <option value="spain">Espagne</option>
+    </select>
+
+    <label for="serie">Série :</label>
+    <input type="text" id="serie" name="serie" placeholder="151, prismatic evolutions, etc...">
+
+    <button type="submit">Chercher</button>
+
+    <div id="watchlist-section" style="display: none; margin-top: 30px;">
+      <h2>Ajouter une alerte de prix</h2>
+      <label for="target-price">Prix souhaité (€) :</label>
+      <input type="number" id="target-price" placeholder="ex: 42.69" style="width: 100px;">
+      <button id="add-watchlist-btn" type="button">Ajouter à la watchlist</button>
+    </div>
+  </form>
+
+  <!-- Tableau d'affichage -->
+  <table id="results-table" style="display:none;">
+    <thead>
+      <tr>
+        <th>Catégorie</th>
+        <th>Nom</th>
+        <th>Langue</th>
+        <th>Pays</th>
+        <th>Vendeur</th>
+        <th>Niveau</th>
+        <th>Prix</th>
+        <th>Quantité</th>
+      </tr>
+    </thead>
+    <tbody id="results-body">
+      <!-- Résultats insérés dynamiquement -->
+    </tbody>
+  </table>
+  
+
+  <script>
+    document.getElementById('add-watchlist-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      const category = document.getElementById('category').value;
+      const language = document.getElementById('language').value;
+      const country = document.getElementById('country').value;
+      const serie = document.getElementById('serie').value;
+      const targetPrice = parseFloat(document.getElementById('target-price').value);
+      if (isNaN(targetPrice)) {
+        alert("Veuillez entrer un prix valide.");
+        return;
+      }
+      try {
+        const res = await fetch('/api/watchlists', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category, language, country, serie, targetPrice })
+        });
+
+        let data = await res.text();  // Récupère la réponse brute en texte
+  console.log('Réponse brute:', data);
+        // data = await data.json();
+
+      if (res.status === 201) {
+        document.body.style.backgroundColor = 'green';
+        // alert('Ajouté à la watchlist !');
+      } else {
+        document.body.style.backgroundColor = 'red';
+        // alert('Erreur : ' + (data.error || 'Impossible d\'ajouter'));
+      }
+    } catch (err) {
+    document.body.style.backgroundColor = 'red';
+    alert('Erreur réseau : ' + err.message);
+    }
+});
+
+    document.getElementById('search-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const category = document.getElementById('category').value;
+      const language = document.getElementById('language').value;
+      const country = document.getElementById('country').value;
+      const serie = document.getElementById('serie').value;
+
+      const watchlistSection = document.getElementById('watchlist-section');
+
+      const params = new URLSearchParams({
+        ...(category && { category }),
+        ...(language && { language }),
+        ...(country && { country }),
+        ...(serie && { serie })
+      });
+
+      try {
+        const res = await fetch(`/api/articles?${params.toString()}`);
+        const data = await res.json();
+
+        const table = document.getElementById('results-table');
+        const tbody = document.getElementById('results-body');
+
+        // Vider l'ancien contenu
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          table.style.display = "none";
+          watchlistSection.style.display = 'none';
+          alert("Aucun article trouvé.");
+          return;
+        }
+
+        table.style.display = "table";
+        watchlistSection.style.display = 'block';
+
+        data.forEach(item => {
+          const row = document.createElement('tr');
+
+          row.innerHTML = `
+            <td>${item.articleCategorie}</td>
+            <td>${item.articleName}</td>
+            <td>${item.articleLanguage}</td>
+            <td>${item.sellerCountry}</td>
+            <td>${item.sellerName}</td>
+            <td>${item.sellerLevel}</td>
+            <td>${item.articlePrice}</td>
+            <td>${item.articleAmount}</td>
+          `;
+
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        alert("Erreur lors du fetch : " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>

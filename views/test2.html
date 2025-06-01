@@ -18,6 +18,9 @@
   </div>
 
   <script>
+
+    // document.getElementById('plop').textContent = req.session.displayName;
+    // document.getElementById('img_plop').src = req.session.userPicture;
     fetch('/user')
       .then(response => response.json())
       .then(json => {
