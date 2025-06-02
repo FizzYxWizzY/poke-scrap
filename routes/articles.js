@@ -85,8 +85,22 @@ router.get('/', async (req, res) => {
   
 		  console.log(`✅ Articles mis à jour et nettoyés. (${new Date().toISOString()})`);
   
-		  const queryString = new URLSearchParams(req.query).toString();
-		  return res.redirect('/api/articles?' + queryString);
+		  const articles = await Article.find({
+			articleName: serie,
+			articleLanguage: language,
+			articleCategorie: category,
+			sellerCountry: country,
+			lastUpdate: { $gt: fiveMinutesAgo }
+		  });
+	  
+		  // Si on a trouvé des articles récents, les retourner
+		  if (articles.length > 0) {
+			console.log(`✅ Données récentes trouvées dans la base. (${new Date().toISOString()})`);
+			return res.json(articles);
+		  } else {
+			console.log(`❌ Aucunes données récentes trouvées dans la base. (${new Date().toISOString()})`);
+			return res.status(204).send('No Data Sorry. ' + err.message);
+		  }
 		} catch (err) {
 		  console.error('❌ Erreur parsing JSON ou enregistrement:', err.message);
 		  return res.status(500).send('Erreur parsing JSON : ' + err.message);

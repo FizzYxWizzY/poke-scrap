@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Watchlist = require('../db/models/Watchlist');
-const mongoose = require('mongoose');
-
-// app.use(express.json());
+// const mongoose = require('mongoose');
 
 // 🔹 CREATE (ajouter un article à une watchlist)
 router.post('/', async (req, res) => {
@@ -14,6 +12,8 @@ router.post('/', async (req, res) => {
   if (!userEmail) {
     return res.status(401).json({ error: "Non connecté" });
   }
+  // pour vider toute la watchlist (pck j ai pas encore d autre fonction)
+  // decommenter -> add a la watchlist = clear all, et refait une avec l entree actuel (comme sa j peux add a chaque fois la meme et pas apprendre le nom des series pokemachin)
   // await mongoose.connection.db.dropCollection('watchlists')
   //   .then(() => console.log('✅ Collection "watchlists" supprimée.'))
   //   .catch(err => console.log('❌ Erreur :', err));
@@ -26,6 +26,7 @@ router.post('/', async (req, res) => {
       sellerCountry: country,
       targetPrice: targetPrice
     });
+    console.log(`✅ Article ajouté a la watchlist. (${new Date().toISOString()})`);
     return res.status(201).json(watchlist);
   } catch (err) {
     if (err.code === 11000) {
@@ -38,16 +39,14 @@ router.post('/', async (req, res) => {
 });
 
 // 🔹 READ ALL (pour un utilisateur donné, avec article lié)
-// router.get('/user/:userId', async (req, res) => {
-//   try {
-//     const watchlists = await Watchlist.find({ user: req.params.userId })
-//       .populate('article')
-//       .populate('user');
-//     res.json(watchlists);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const watchlists = await Watchlist.find({ user: req.params.userId })
+    res.json(watchlists);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // 🔹 READ ONE
 // router.get('/:id', async (req, res) => {
@@ -63,25 +62,25 @@ router.post('/', async (req, res) => {
 // });
 
 // 🔹 UPDATE
-// router.put('/:id', async (req, res) => {
-//   try {
-//     const watchlist = await Watchlist.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//     if (!watchlist) return res.status(404).json({ error: 'Entrée non trouvée' });
-//     res.json(watchlist);
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// });
+router.put('/:id', async (req, res) => {
+  try {
+    const watchlist = await Watchlist.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!watchlist) return res.status(404).json({ error: 'Entrée non trouvée' });
+    res.json(watchlist);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
 // 🔹 DELETE
-// router.delete('/:id', async (req, res) => {
-//   try {
-//     const watchlist = await Watchlist.findByIdAndDelete(req.params.id);
-//     if (!watchlist) return res.status(404).json({ error: 'Entrée non trouvée' });
-//     res.sendStatus(204);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
+router.delete('/:id', async (req, res) => {
+  try {
+    const watchlist = await Watchlist.findByIdAndDelete(req.params.id);
+    if (!watchlist) return res.status(404).json({ error: 'Entrée non trouvée' });
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
