@@ -1,4 +1,5 @@
 const connectDB = require('./db/database');
+const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const sellerRoutes = require('./routes/sellers');
 const articleRoutes = require('./routes/articles');
@@ -29,20 +30,11 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routes OAuth
-app.get('/auth/google',
-	passport.authenticate('google', { scope: ['email', 'profile'] })
-);
-
-app.get('/auth/google/callback',
-	passport.authenticate('google', { failureRedirect: '/home/kali/Desktop/poke-scrap/views/test.html' }),
-	(req, res) => {
-		req.session.userEmail = req.user.userEmail;
-		req.session.displayName = req.user.displayName;
-		req.session.googleId = req.user.googleId;
-		req.session.userPicture = req.user.userPicture;
-    	res.sendFile(`/home/kali/Desktop/poke-scrap/views/test2.html`);
-});
+app.use('/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/sellers', sellerRoutes);
+app.use('/api/articles', articleRoutes);
+app.use('/api/watchlists', watchlistRoutes);
 
 app.get('/user', (req, res) => {
 	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
@@ -78,9 +70,5 @@ app.get('/scrapper', (req, res) => {
 	
 });
 
-app.use('/api/users', userRoutes);
-app.use('/api/sellers', sellerRoutes);
-app.use('/api/articles', articleRoutes);
-app.use('/api/watchlists', watchlistRoutes);
 
 app.listen(5000, () => console.log(`Serveur sur le port 5000 (${new Date().toISOString()})`));
