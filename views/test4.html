@@ -99,6 +99,7 @@
     <tbody id="results-body">
       <!-- Résultats insérés dynamiquement -->
     </tbody>
+    <button onclick="window.location.href='http://localhost:5000/watch'">Connexion avec Google</button>
   </table>
   
 
@@ -193,7 +194,7 @@
           tbody.appendChild(row);
         });
       } catch (error) {
-        alert("Erreur lors du fetch : " + error.message);
+        // alert("Erreur lors du fetch : " + error.message);
       }
     });
   </script>

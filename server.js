@@ -5,7 +5,7 @@ const sellerRoutes = require('./routes/sellers');
 const articleRoutes = require('./routes/articles');
 const watchlistRoutes = require('./routes/watchlists');
 require('./auth/google');
-require('./middlewares/auth');
+// require('./middlewares/auth');
 const Article = require('./db/models/Article');
 
 // server.js
@@ -36,6 +36,8 @@ app.use('/api/sellers', sellerRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/watchlists', watchlistRoutes);
 
+
+// sa doit etre useless, il y a ces info dans req.session.XXX
 app.get('/user', (req, res) => {
 	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
 	res.json({
@@ -45,6 +47,18 @@ app.get('/user', (req, res) => {
 		email: req.user.userEmail
 	});
 
+});
+
+app.get('/watch', (req, res) => {
+	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
+	res.sendFile("/home/kali/Desktop/poke-scrap/views/test5.html");
+	
+});
+
+app.get('/scrapper', (req, res) => {
+	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
+	res.sendFile("/home/kali/Desktop/poke-scrap/views/test4.html");
+	
 });
 
 app.get('/logout', (req, res) => {
@@ -63,12 +77,5 @@ app.get('/logout', (req, res) => {
 	  });
 	});
 });
-
-app.get('/scrapper', (req, res) => {
-	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
-	res.sendFile("/home/kali/Desktop/poke-scrap/views/test4.html");
-	
-});
-
 
 app.listen(5000, () => console.log(`Serveur sur le port 5000 (${new Date().toISOString()})`));

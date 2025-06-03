@@ -38,33 +38,29 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 🔹 READ ALL (pour un utilisateur donné, avec article lié)
-router.get('/user/:userId', async (req, res) => {
+// 🔹 READ ALL pour le user connecter
+router.get('/', async (req, res) => {
+  if (!req.session.googleId) {
+    return res.status(401).json({ error: 'Utilisateur non authentifié' });
+  }
+
   try {
-    const watchlists = await Watchlist.find({ user: req.params.userId })
-    res.json(watchlists);
+    const watchlists = await Watchlist.find({ userEmail: req.session.userEmail });
+    return res.json(watchlists);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
-// 🔹 READ ONE
-// router.get('/:id', async (req, res) => {
-//   try {
-//     const watchlist = await Watchlist.findById(req.params.id)
-//       .populate('article')
-//       .populate('user');
-//     if (!watchlist) return res.status(404).json({ error: 'Entrée non trouvée' });
-//     res.json(watchlist);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
 // 🔹 UPDATE
 router.put('/:id', async (req, res) => {
+  if (!req.session.googleId) {
+    return res.status(401).json({ error: 'Non authentifié' });
+  }
+
   try {
-    const watchlist = await Watchlist.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const watchlist = await Watchlist.findByIdAndUpdate(req.params.userEmail, req.body, { new: true });
     if (!watchlist) return res.status(404).json({ error: 'Entrée non trouvée' });
     res.json(watchlist);
   } catch (err) {
@@ -74,12 +70,24 @@ router.put('/:id', async (req, res) => {
 
 // 🔹 DELETE
 router.delete('/:id', async (req, res) => {
+  if (!req.session.googleId) {
+    return res.status(401).json({ error: 'Non authentifié' });
+  }
+
   try {
-    const watchlist = await Watchlist.findByIdAndDelete(req.params.id);
-    if (!watchlist) return res.status(404).json({ error: 'Entrée non trouvée' });
-    res.sendStatus(204);
+    const deleted = await Watchlist.findOneAndDelete({
+      _id: req.params.id,
+      userEmail: req.session.userEmail
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Élément non trouvé ou non autorisé' });
+    }
+
+    res.json({ message: 'Élément supprimé avec succès' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 

@@ -103,7 +103,7 @@ router.get('/', async (req, res) => {
 		  }
 		} catch (err) {
 		  console.error('❌ Erreur parsing JSON ou enregistrement:', err.message);
-		  return res.status(500).send('Erreur parsing JSON : ' + err.message);
+		  return res.redirect(`/scrapper`);
 		}
 	  });
   
