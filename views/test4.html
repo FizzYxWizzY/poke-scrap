@@ -2,23 +2,12 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Recherche d'article</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <title>Poke'Scrap</title>
   <style>
-    body {
-      font-family: sans-serif;
-      font-size: 14px;
-      text-align: center;
-      padding: 50px;
-      color: blanchedalmond;
-      background-color: slategrey;
-    }
-
-    button {
-      font-size: 18px;
-      padding: 10px 20px;
-      margin-top: 20px;
-    }
-
+    body { font-family: sans-serif; font-size: 14px; text-align: center; padding: 50px; color: #c1c1c1; background-color: #47284c;}
+    button { font-size: 18px; padding: 10px 20px; }
+    button:hover { border: solid 2px #31395a }
     table {
       font-size: 14px;
       margin: 20px auto;
@@ -27,22 +16,23 @@
     }
 
     th, td {
-      border: 1px solid white;
+      border: 1px solid #c1c1c1;
       padding: 8px;
     }
 
     th {
-      background-color: darkslategray;
-      color: white;
+      background-color: #232943;
+      color: #c1c1c1;
     }
 
     td {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: white;
+      background-color: #30385a;
+      color: #c1c1c1;
     }
   </style>
 </head>
 <body>
+  <img src="/logo.png" alt="logo" width="200px">
   <h1>Recherche Pokémon</h1>
 
   <form id="search-form" method="get" action="/api/articles">
@@ -99,7 +89,7 @@
     <tbody id="results-body">
       <!-- Résultats insérés dynamiquement -->
     </tbody>
-    <button onclick="window.location.href='http://localhost:5000/watch'">Connexion avec Google</button>
+    <button onclick="window.location.href='/api/watch'">Watchlist</button>
   </table>
   
 

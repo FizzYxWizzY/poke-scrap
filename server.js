@@ -37,8 +37,7 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/watchlists', watchlistRoutes);
 
 
-// sa doit etre useless, il y a ces info dans req.session.XXX
-app.get('/user', (req, res) => {
+app.get('/api/user', (req, res) => {
 	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
 	res.json({
 		googleId: req.user.googleId,
@@ -49,19 +48,19 @@ app.get('/user', (req, res) => {
 
 });
 
-app.get('/watch', (req, res) => {
+app.get('/api/watch', (req, res) => {
 	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
-	res.sendFile("/home/kali/Desktop/poke-scrap/views/test5.html");
+	res.sendFile("/home/user/poke-scrap/views/test5.html");
 	
 });
 
-app.get('/scrapper', (req, res) => {
+app.get('/api/scrapper', (req, res) => {
 	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
-	res.sendFile("/home/kali/Desktop/poke-scrap/views/test4.html");
+	res.sendFile("/home/user/poke-scrap/views/test4.html");
 	
 });
 
-app.get('/logout', (req, res) => {
+app.get('/api/logout', (req, res) => {
 	req.logout(err => {
 		if (err) {
 			console.error('Logout error:', err);
@@ -73,9 +72,11 @@ app.get('/logout', (req, res) => {
 				return res.status(500).send('Session failed.');
 			}
 			res.clearCookie('connect.sid');
-			res.sendFile("/home/kali/Desktop/poke-scrap/views/test.html"); // Or any page you want
+			res.sendFile("/home/user/poke-scrap/views/test.html"); // Or any page you want
 	  });
 	});
 });
+
+console.log("CALLBACK_URL ACTUEL :", process.env.CALLBACK_URL);
 
 app.listen(5000, () => console.log(`Serveur sur le port 5000 (${new Date().toISOString()})`));

@@ -9,13 +9,13 @@ router.get('/google',
 
 // Callback de Google
 router.get('/google/callback',
-    passport.authenticate('google', { failureRedirect: '/home/kali/Desktop/poke-scrap/views/test.html' }),
+    passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
         req.session.userEmail = req.user.userEmail;
         req.session.displayName = req.user.displayName;
         req.session.googleId = req.user.googleId;
         req.session.userPicture = req.user.userPicture;
-        res.sendFile('/home/kali/Desktop/poke-scrap/views/test2.html');
+        res.sendFile('/home/user/poke-scrap/views/test2.html');
     }
 );
 
