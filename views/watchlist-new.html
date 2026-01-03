@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poke'Scrap - My Watchlist</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f0f1a;
+      --bg-card: #1a1a2e;
+      --bg-card-hover: #252542;
+      --bg-input: #16162a;
+      --accent: #6c5ce7;
+      --accent-hover: #8b7cf7;
+      --accent-glow: rgba(108, 92, 231, 0.3);
+      --success: #00b894;
+      --warning: #fdcb6e;
+      --error: #e74c3c;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b8;
+      --text-muted: #6c6c80;
+      --border: #2d2d44;
+      --border-light: #3d3d5c;
+      --gradient-1: linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+    }
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--gradient-1);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+    }
+    .btn-secondary {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--border-light);
+      border-color: var(--accent);
+    }
+    .btn-danger {
+      background: transparent;
+      color: var(--error);
+      border: 1px solid var(--error);
+    }
+    .btn-danger:hover {
+      background: var(--error);
+      color: white;
+    }
+    .btn-icon {
+      background: transparent;
+      color: var(--error);
+      padding: 8px;
+      font-size: 1.2rem;
+      border: none;
+    }
+    .btn-icon:hover {
+      transform: scale(1.2);
+    }
+
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 120px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .watchlist-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: var(--bg-card-hover);
+      padding: 16px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    .product-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .product-image {
+      width: 50px;
+      height: 70px;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+    }
+
+    .product-name {
+      font-weight: 500;
+    }
+
+    .price-cell {
+      color: var(--success);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: var(--accent-glow);
+      color: var(--accent-hover);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    .empty-title {
+      font-size: 1.3rem;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .empty-desc {
+      margin-bottom: 24px;
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .message {
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 500;
+    }
+    .message.success {
+      background: rgba(0, 184, 148, 0.15);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+    .message.error {
+      background: rgba(231, 76, 60, 0.15);
+      color: var(--error);
+      border: 1px solid var(--error);
+    }
+    .message.hidden { display: none; }
+
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .page-title {
+        font-size: 1.8rem;
+      }
+      th, td {
+        padding: 12px;
+        font-size: 0.9rem;
+      }
+      .product-image {
+        width: 40px;
+        height: 56px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="/" class="logo-section" style="text-decoration: none;">
+        <img src="/logo.png" alt="Poke'Scrap" class="logo">
+        <span class="logo-text">Poke'Scrap</span>
+      </a>
+      <nav class="nav-buttons">
+        <a href="/api/scrapper" class="btn btn-secondary">🔍 Search</a>
+        <a href="/dashboard" class="btn btn-secondary">🏠 Dashboard</a>
+        <button onclick="logout()" class="btn btn-danger">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="page-header">
+      <h1 class="page-title">⭐ My Watchlist</h1>
+      <p class="page-subtitle">Manage your price alerts to get notified of the best deals</p>
+    </div>
+
+    <div id="message-container" class="message hidden"></div>
+
+    <div class="watchlist-card">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Language</th>
+              <th>Country</th>
+              <th>Target Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="watchlist-body">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted);">
+                Loading...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    © <span id="current-year"></span> Poke'Scrap — <a href="mailto:pokescrap.project@gmail.com" style="color: var(--accent-hover);">Contact</a>
+  </footer>
+
+  <script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    const messageContainer = document.getElementById('message-container');
+
+    function showMessage(text, type = 'error') {
+      messageContainer.textContent = text;
+      messageContainer.className = 'message ' + type;
+      setTimeout(() => { messageContainer.className = 'message hidden'; }, 4000);
+    }
+
+    function logout() {
+      fetch('/api/logout', {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Logout failed');
+        }
+      })
+      .then(data => {
+        if (data.success) {
+          // Hide logout button
+          document.querySelector('.btn-danger').style.display = 'none';
+          
+          // Show success message and redirect after delay
+          showMessage('Logged out successfully!', 'success');
+          setTimeout(() => {
+            window.location.href = '/api/scrapper';
+          }, 1000);
+        }
+      })
+      .catch(error => {
+        console.error('Logout error:', error);
+        // Even if there's an error, assume logout worked and redirect
+        showMessage('Logged out successfully!', 'success');
+        setTimeout(() => {
+          window.location.href = '/api/scrapper';
+        }, 1000);
+      });
+    }
+
+    async function fetchWatchlist() {
+      try {
+        const res = await fetch('/api/watchlists');
+        
+        if (res.status === 401) {
+          window.location.href = '/auth/google?returnTo=/api/watch';
+          return;
+        }
+
+        const data = await res.json();
+        const tbody = document.getElementById('watchlist-body');
+        tbody.innerHTML = '';
+
+        if (!data.length) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6">
+                <div class="empty-state">
+                  <div class="empty-icon">📭</div>
+                  <div class="empty-title">No alerts configured</div>
+                  <div class="empty-desc">Add products to your watchlist to get notified of the best deals</div>
+                  <a href="/api/scrapper" class="btn btn-primary">🔍 Search products</a>
+                </div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        data.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>
+              <div class="product-cell">
+                ${item.articleImage ? `<img src="/images/${item.articleImage}" class="product-image" alt="">` : ''}
+                <span class="product-name">${item.articleName}</span>
+              </div>
+            </td>
+            <td><span class="badge">${item.articleCategorie}</span></td>
+            <td>${item.articleLanguage}</td>
+            <td>${item.sellerCountry}</td>
+            <td class="price-cell">${item.targetPrice.toFixed(2)} €</td>
+            <td>
+              <button class="btn btn-icon" onclick="deleteWatchlist('${item._id}')" title="Delete">
+                🗑️
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        showMessage('Loading error: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteWatchlist(id) {
+      if (!confirm('Delete this alert?')) return;
+
+      try {
+        const res = await fetch(`/api/watchlists/${id}`, { method: 'DELETE' });
+
+        if (res.ok) {
+          showMessage('✓ Alert deleted', 'success');
+          fetchWatchlist();
+        } else {
+          const data = await res.json();
+          showMessage(data.error || 'Error deleting alert.', 'error');
+        }
+      } catch (err) {
+        showMessage('Network error: ' + err.message, 'error');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', fetchWatchlist);
+  </script>
+</body>
+</html>

@@ -3,12 +3,15 @@ const path = require('path');
 const router = express.Router();
 const passport = require('passport');
 
-// Route vers Google
-router.get('/google',
-    passport.authenticate('google', { scope: ['email', 'profile'] })
-);
+// Route vers Google - save returnTo in session
+router.get('/google', (req, res, next) => {
+    if (req.query.returnTo) {
+        req.session.returnTo = req.query.returnTo;
+    }
+    next();
+}, passport.authenticate('google', { scope: ['email', 'profile'] }));
 
-// Callback de Google
+// Callback de Google - redirect to saved returnTo or default
 router.get('/google/callback',
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
@@ -16,7 +19,9 @@ router.get('/google/callback',
         req.session.displayName = req.user.displayName;
         req.session.googleId = req.user.googleId;
         req.session.userPicture = req.user.userPicture;
-        res.redirect('/dashboard');
+        const returnTo = req.session.returnTo || '/dashboard';
+        delete req.session.returnTo;
+        res.redirect(returnTo);
     }
 );
 

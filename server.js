@@ -19,6 +19,7 @@ const sellerRoutes = require('./routes/sellers');
 const articleRoutes = require('./routes/articles');
 const watchlistRoutes = require('./routes/watchlists');
 const optionsRoutes = require('./routes/options');
+const recentRoutes = require('./routes/recent');
 const app = express();
 app.use(express.json());
 
@@ -44,6 +45,7 @@ app.use('/api/sellers', sellerRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/watchlists', watchlistRoutes);
 app.use('/api/options', optionsRoutes);
+app.use('/api/recent', recentRoutes);
 
 
 // Static files
@@ -60,14 +62,15 @@ app.get('/api/user', ensureAuth, (req, res) => {
 
 // Dashboard page (after login)
 app.get('/dashboard', ensureAuth, (req, res) => {
-	res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
+	res.sendFile(path.join(__dirname, 'views', 'dashboard-new.html'));
 });
 
 app.get('/api/watch', ensureAuth, (req, res) => {
-	res.sendFile(path.join(__dirname, 'views', 'watchlist.html'));
+	res.sendFile(path.join(__dirname, 'views', 'watchlist-new.html'));
 });
 
-app.get('/api/scrapper', ensureAuth, (req, res) => {
+// Search page - PUBLIC (no auth required)
+app.get('/api/scrapper', (req, res) => {
 	res.sendFile(path.join(__dirname, 'views', 'search-new.html'));
 });
 
@@ -83,18 +86,25 @@ app.get('/api/logout', (req, res) => {
 				return res.status(500).send('Session failed.');
 			}
 			res.clearCookie('connect.sid');
-			res.sendFile(path.join(__dirname, 'views', 'login.html'));
+			
+			// Check if this is an AJAX request
+			if (req.headers['x-requested-with'] === 'XMLHttpRequest' || req.headers.accept?.includes('application/json')) {
+				res.json({ success: true, message: 'Logged out successfully' });
+			} else {
+				res.sendFile(path.join(__dirname, 'views', 'login-new.html'));
+			}
 		});
 	});
 });
 
-// Home page redirect
+// Login page
+app.get('/login', (req, res) => {
+	res.sendFile(path.join(__dirname, 'views', 'login-new.html'));
+});
+
+// Home page redirect - now goes to search (public)
 app.get('/', (req, res) => {
-	if (req.isAuthenticated()) {
-		res.redirect('/api/scrapper');
-	} else {
-		res.sendFile(path.join(__dirname, 'views', 'login.html'));
-	}
+	res.redirect('/api/scrapper');
 });
 
 // Manual trigger for price check (admin only - protected by auth)
@@ -106,7 +116,7 @@ app.get('/api/check-prices', ensureAuth, async (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-	res.status(404).sendFile(path.join(__dirname, 'views', 'login.html'));
+	res.status(404).sendFile(path.join(__dirname, 'views', 'login-new.html'));
 });
 
 console.log("CALLBACK_URL ACTUEL :", process.env.CALLBACK_URL);

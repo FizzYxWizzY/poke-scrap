@@ -17,12 +17,12 @@ const transporter = nodemailer.createTransport({
  */
 function generateArticleRows(articles) {
   return articles.map(article => `
-    <tr style="border-bottom: 1px solid #47284c;">
-      <td style="padding: 8px; color: #c1c1c1;">${article.sellerName}</td>
-      <td style="padding: 8px; color: #c1c1c1;">${article.sellerLevel}</td>
-      <td style="padding: 8px; color: #4CAF50; font-weight: bold;">${article.articlePrice}</td>
-      <td style="padding: 8px; color: #c1c1c1;">${article.articleAmount}</td>
-      <td style="padding: 8px; color: #999; font-style: italic; font-size: 0.9em;">${article.sellerComment || '-'}</td>
+    <tr style="border-bottom: 1px solid #2d2d44;">
+      <td style="padding: 12px 8px; color: #a0a0b8;">${article.sellerName}</td>
+      <td style="padding: 12px 8px; color: #a0a0b8;">${article.sellerLevel}</td>
+      <td style="padding: 12px 8px; color: #00b894; font-weight: 600;">${article.articlePrice}</td>
+      <td style="padding: 12px 8px; color: #a0a0b8;">${article.articleAmount}</td>
+      <td style="padding: 12px 8px; color: #6c6c80; font-style: italic; font-size: 0.9em;">${article.sellerComment || '-'}</td>
     </tr>
   `).join('');
 }
@@ -78,32 +78,37 @@ function generateAlertBlock(alert) {
   const cardmarketUrl = buildCardmarketUrl(alert);
   
   return `
-    <div style="background: #30385a; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <h2 style="color: #fff; margin: 0 0 15px 0;">${alert.articleName}</h2>
+    <div style="background: #1a1a2e; padding: 24px; border-radius: 12px; margin: 20px 0; border: 1px solid #2d2d44;">
+      <h2 style="color: #ffffff; margin: 0 0 16px 0; font-size: 1.3em;">${alert.articleName}</h2>
       
-      ${imageUrl ? `<img src="${imageUrl}" width="120" height="120" style="display: block; border-radius: 8px; margin-bottom: 15px;">` : ''}
+      ${imageUrl ? `<img src="${imageUrl}" width="120" style="display: block; border-radius: 8px; margin-bottom: 16px; border: 2px solid #6c5ce7;">` : ''}
       
-      <p style="color: #c1c1c1; margin: 5px 0;"><strong>Catégorie:</strong> ${alert.category}</p>
-      <p style="color: #c1c1c1; margin: 5px 0;"><strong>Langue:</strong> ${alert.language}</p>
-      <p style="color: #c1c1c1; margin: 5px 0;"><strong>Pays vendeur:</strong> ${alert.country}</p>
-      <p style="color: #c1c1c1; margin: 5px 0;"><strong>Votre prix cible:</strong> ${alert.targetPrice.toFixed(2)} €</p>
-      <p style="color: #4CAF50; margin: 5px 0; font-size: 1.2em;"><strong>Meilleur prix: ${cheapestPrice}</strong></p>
+      <div style="background: #252542; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+        <p style="color: #a0a0b8; margin: 6px 0; font-size: 14px;"><span style="color: #6c6c80;">Category:</span> ${alert.category}</p>
+        <p style="color: #a0a0b8; margin: 6px 0; font-size: 14px;"><span style="color: #6c6c80;">Language:</span> ${alert.language}</p>
+        <p style="color: #a0a0b8; margin: 6px 0; font-size: 14px;"><span style="color: #6c6c80;">Seller Country:</span> ${alert.country}</p>
+        <p style="color: #a0a0b8; margin: 6px 0; font-size: 14px;"><span style="color: #6c6c80;">Your target price:</span> ${alert.targetPrice.toFixed(2)} €</p>
+      </div>
       
-      <h3 style="color: #c1c1c1; margin-top: 20px;">📋 ${articleCount} offre(s):</h3>
-      <table style="width: 100%; border-collapse: collapse; background: #232943;">
-        <tr style="border-bottom: 2px solid #47284c;">
-          <th style="padding: 8px; color: #c1c1c1; text-align: left;">Vendeur</th>
-          <th style="padding: 8px; color: #c1c1c1; text-align: left;">Ventes</th>
-          <th style="padding: 8px; color: #c1c1c1; text-align: left;">Prix</th>
-          <th style="padding: 8px; color: #c1c1c1; text-align: left;">Qté</th>
-          <th style="padding: 8px; color: #c1c1c1; text-align: left;">Commentaire</th>
+      <div style="background: linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; text-align: center;">
+        <p style="color: #ffffff; margin: 0; font-size: 1.1em; font-weight: 600;">💰 Best price: ${cheapestPrice}</p>
+      </div>
+      
+      <h3 style="color: #a0a0b8; margin: 16px 0 12px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">📋 ${articleCount} offer(s) available</h3>
+      <table style="width: 100%; border-collapse: collapse; background: #16162a; border-radius: 8px; overflow: hidden;">
+        <tr style="background: #252542;">
+          <th style="padding: 12px 8px; color: #a0a0b8; text-align: left; font-size: 12px; text-transform: uppercase;">Seller</th>
+          <th style="padding: 12px 8px; color: #a0a0b8; text-align: left; font-size: 12px; text-transform: uppercase;">Sales</th>
+          <th style="padding: 12px 8px; color: #a0a0b8; text-align: left; font-size: 12px; text-transform: uppercase;">Price</th>
+          <th style="padding: 12px 8px; color: #a0a0b8; text-align: left; font-size: 12px; text-transform: uppercase;">Qty</th>
+          <th style="padding: 12px 8px; color: #a0a0b8; text-align: left; font-size: 12px; text-transform: uppercase;">Comment</th>
         </tr>
         ${generateArticleRows(alert.matchingArticles)}
       </table>
       
-      <p style="text-align: center; margin-top: 15px;">
-        <a href="${cardmarketUrl}" style="background: #4CAF50; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; font-size: 14px;">
-          🛒 Voir sur Cardmarket
+      <p style="text-align: center; margin-top: 20px;">
+        <a href="${cardmarketUrl}" style="display: inline-block; background: linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500;">
+          🛒 View on Cardmarket
         </a>
       </p>
     </div>
@@ -123,30 +128,50 @@ async function sendConsolidatedAlert({ to, alerts }) {
   const mailOptions = {
     from: `"Poke'Scrap Alert" <${process.env.GMAIL_USER}>`,
     to: to,
-    subject: `🎉 Alerte Prix: ${totalArticles} article(s) avec ${totalOffers} offre(s) sous vos prix cibles!`,
+    subject: `🎉 Price Alert: ${totalArticles} item(s) with ${totalOffers} offer(s) below your target prices!`,
     html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #47284c; padding: 20px; border-radius: 10px;">
-        <h1 style="color: #c1c1c1; text-align: center;">🎴 Poke'Scrap - Alerte Prix!</h1>
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0f0f1a; padding: 0; border-radius: 16px; overflow: hidden;">
         
-        <p style="color: #c1c1c1; text-align: center; font-size: 1.1em;">
-          ${totalArticles} article(s) de votre watchlist ont des offres sous vos prix cibles!
-        </p>
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%); padding: 32px 24px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">🎴 Poke'Scrap</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 16px;">Price Alert</p>
+        </div>
         
-        ${alertBlocks}
+        <!-- Content -->
+        <div style="padding: 24px;">
+          <div style="background: #1a1a2e; border: 1px solid #2d2d44; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
+            <p style="color: #ffffff; font-size: 18px; margin: 0;">
+              🎉 <strong>${totalArticles} item(s)</strong> from your watchlist
+            </p>
+            <p style="color: #a0a0b8; font-size: 14px; margin: 8px 0 0 0;">
+              with <strong style="color: #00b894;">${totalOffers} offer(s)</strong> below your target prices!
+            </p>
+          </div>
+          
+          ${alertBlocks}
+        </div>
         
-        <p style="color: #888; font-size: 12px; text-align: center; margin-top: 30px;">
-          Cet email a été envoyé automatiquement par Poke'Scrap.
-        </p>
+        <!-- Footer -->
+        <div style="background: #1a1a2e; border-top: 1px solid #2d2d44; padding: 20px 24px; text-align: center;">
+          <p style="color: #6c6c80; font-size: 12px; margin: 0;">
+            This email was sent automatically by Poke'Scrap
+          </p>
+          <p style="margin: 8px 0 0 0;">
+            <a href="mailto:pokescrap.project@gmail.com" style="color: #8b7cf7; font-size: 12px; text-decoration: none;">Contact</a>
+          </p>
+        </div>
+        
       </div>
     `
   };
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Email consolidé envoyé à ${to}: ${info.messageId}`);
+    console.log(`✅ Consolidated email sent to ${to}: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
   } catch (err) {
-    console.error(`❌ Erreur envoi email à ${to}:`, err.message);
+    console.error(`❌ Email error to ${to}:`, err.message);
     return { success: false, error: err.message };
   }
 }

@@ -6,13 +6,13 @@ const { validateArticleSearch, validateObjectId } = require('../middlewares/vali
 const { getArticles, preSearch, getArticlesDirect } = require('../services/articleService');
 const { categories, languages, countries } = require('../data/cardmarket-data');
 
-// 🔹 GET Cardmarket options (categories, languages, countries)
-router.get('/options', ensureAuth, (req, res) => {
+// 🔹 GET Cardmarket options (categories, languages, countries) - PUBLIC
+router.get('/options', (req, res) => {
   res.json({ categories, languages, countries });
 });
 
-// 🔹 PRE-SEARCH: Get all matching products for a category + search term
-router.get('/presearch', ensureAuth, async (req, res) => {
+// 🔹 PRE-SEARCH: Get all matching products for a category + search term - PUBLIC
+router.get('/presearch', async (req, res) => {
   const { category, search } = req.query;
   
   if (!category || !search) {
@@ -31,8 +31,8 @@ router.get('/presearch', ensureAuth, async (req, res) => {
   }
 });
 
-// 🔹 DIRECT SEARCH: Scrape a specific product by its path
-router.get('/direct', ensureAuth, async (req, res) => {
+// 🔹 DIRECT SEARCH: Scrape a specific product by its path - PUBLIC
+router.get('/direct', async (req, res) => {
   const { productPath, country, language } = req.query;
   
   if (!productPath || !country || !language) {

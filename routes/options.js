@@ -10,8 +10,8 @@ const {
 } = require('../services/optionsService');
 const { languages, countries } = require('../data/cardmarket-data');
 
-// 🔹 GET all categories (from DB)
-router.get('/categories', ensureAuth, async (req, res) => {
+// 🔹 GET all categories (from DB) - PUBLIC
+router.get('/categories', async (req, res) => {
   try {
     const categories = await getCategories();
     res.json(categories);
@@ -20,8 +20,8 @@ router.get('/categories', ensureAuth, async (req, res) => {
   }
 });
 
-// 🔹 GET all expansions (from DB)
-router.get('/expansions', ensureAuth, async (req, res) => {
+// 🔹 GET all expansions (from DB) - PUBLIC
+router.get('/expansions', async (req, res) => {
   try {
     const expansions = await getExpansions();
     res.json(expansions);
@@ -30,18 +30,18 @@ router.get('/expansions', ensureAuth, async (req, res) => {
   }
 });
 
-// 🔹 GET languages (from static file)
-router.get('/languages', ensureAuth, (req, res) => {
+// 🔹 GET languages (from static file) - PUBLIC
+router.get('/languages', (req, res) => {
   res.json(languages);
 });
 
-// 🔹 GET countries (from static file)
-router.get('/countries', ensureAuth, (req, res) => {
+// 🔹 GET countries (from static file) - PUBLIC
+router.get('/countries', (req, res) => {
   res.json(countries);
 });
 
-// 🔹 GET all options at once (convenience endpoint)
-router.get('/', ensureAuth, async (req, res) => {
+// 🔹 GET all options at once (convenience endpoint) - PUBLIC
+router.get('/', async (req, res) => {
   try {
     const categories = await getCategories();
     const expansions = await getExpansions();
@@ -51,7 +51,7 @@ router.get('/', ensureAuth, async (req, res) => {
   }
 });
 
-// 🔹 POST force refresh of categories/expansions from Cardmarket
+// 🔹 POST force refresh of categories/expansions from Cardmarket - PROTECTED
 router.post('/refresh', ensureAuth, async (req, res) => {
   try {
     const result = await updateOptionsFromCardmarket();
@@ -69,8 +69,8 @@ router.post('/refresh', ensureAuth, async (req, res) => {
   }
 });
 
-// 🔹 GET products for a category + expansion combo (or search for singles)
-router.get('/products', ensureAuth, async (req, res) => {
+// 🔹 GET products for a category + expansion combo (or search for singles) - PUBLIC
+router.get('/products', async (req, res) => {
   const { categoryId, expansionId, searchString, country, language } = req.query;
   
   // For singles: use searchString with country/language (required)
