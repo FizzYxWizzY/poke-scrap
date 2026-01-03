@@ -1,6 +1,10 @@
 const { spawn } = require('child_process');
 const Category = require('../db/models/Category');
 const Expansion = require('../db/models/Expansion');
+const ProductCache = require('../db/models/ProductCache');
+
+// Cache duration: 1 hour for product list
+const PRODUCT_CACHE_DURATION_MS = 60 * 60 * 1000;
 
 /**
  * Service to manage Cardmarket options (categories & expansions)
@@ -94,12 +98,33 @@ async function getExpansions() {
 }
 
 /**
- * Scrape products for a category + expansion combo
+ * Scrape products for a category + expansion combo (with caching)
  */
-function scrapeProducts(categoryId, expansionId) {
+async function scrapeProducts(categoryId, expansionId) {
+  const cacheThreshold = new Date(Date.now() - PRODUCT_CACHE_DURATION_MS);
+  
+  // Check cache first
+  const cached = await ProductCache.findOne({
+    categoryId,
+    expansionId,
+    lastUpdate: { $gt: cacheThreshold }
+  });
+
+  if (cached) {
+    console.log(`✅ Product cache hit for category=${categoryId}, expansion=${expansionId} (${new Date().toISOString()})`);
+    return {
+      success: true,
+      products: cached.products,
+      productsCount: cached.products.length,
+      fromCache: true,
+      cacheAge: Math.round((Date.now() - cached.lastUpdate.getTime()) / 1000 / 60) + ' min'
+    };
+  }
+
+  // No cache, scrape fresh
+  console.log(`🔍 Scraping products: category=${categoryId}, expansion=${expansionId} (${new Date().toISOString()})`);
+  
   return new Promise((resolve) => {
-    console.log(`🔍 Scraping products: category=${categoryId}, expansion=${expansionId}`);
-    
     const scrapper = spawn('node', ['src/scrape-products.js', categoryId, expansionId]);
     let output = '';
     let errorOutput = '';
@@ -112,7 +137,7 @@ function scrapeProducts(categoryId, expansionId) {
       errorOutput += data.toString();
     });
 
-    scrapper.on('close', (code) => {
+    scrapper.on('close', async (code) => {
       if (code !== 0) {
         resolve({ success: false, error: errorOutput });
         return;
@@ -120,9 +145,104 @@ function scrapeProducts(categoryId, expansionId) {
 
       try {
         const data = JSON.parse(output);
-        resolve(data);
+        
+        // Save to cache if successful
+        if (data.success && data.products) {
+          await ProductCache.findOneAndUpdate(
+            { categoryId, expansionId },
+            { 
+              categoryId,
+              expansionId,
+              products: data.products,
+              lastUpdate: new Date()
+            },
+            { upsert: true, new: true }
+          );
+          console.log(`💾 Products cached for category=${categoryId}, expansion=${expansionId}`);
+        }
+        
+        resolve({ ...data, fromCache: false });
       } catch (err) {
         resolve({ success: false, error: 'Failed to parse products output' });
+      }
+    });
+
+    scrapper.on('error', (err) => {
+      resolve({ success: false, error: err.message });
+    });
+  });
+}
+
+/**
+ * Search products for singles (cards) by searchString (e.g., "lor042")
+ * Follows redirect and applies language/country filters
+ */
+async function searchProducts(categoryId, searchString, country, language) {
+  // Cache key includes country and language since results vary
+  const cacheKey = `singles:${searchString.toLowerCase()}:${country}:${language}`;
+  const cacheThreshold = new Date(Date.now() - PRODUCT_CACHE_DURATION_MS);
+  
+  // Check cache first
+  const cached = await ProductCache.findOne({
+    categoryId,
+    expansionId: cacheKey,
+    lastUpdate: { $gt: cacheThreshold }
+  });
+
+  if (cached) {
+    console.log(`✅ Singles search cache hit for "${searchString}" (${new Date().toISOString()})`);
+    return {
+      success: true,
+      ...cached.products[0], // Return the cached result object
+      fromCache: true,
+      cacheAge: Math.round((Date.now() - cached.lastUpdate.getTime()) / 1000 / 60) + ' min'
+    };
+  }
+
+  // No cache, search fresh
+  console.log(`🔍 Searching singles: "${searchString}" country=${country} language=${language} (${new Date().toISOString()})`);
+  
+  return new Promise((resolve) => {
+    const scrapper = spawn('node', ['src/scrape-singles.js', searchString, country, language]);
+    let output = '';
+    let errorOutput = '';
+
+    scrapper.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+
+    scrapper.stderr.on('data', (data) => {
+      errorOutput += data.toString();
+    });
+
+    scrapper.on('close', async (code) => {
+      if (code !== 0) {
+        resolve({ success: false, error: errorOutput });
+        return;
+      }
+
+      try {
+        const data = JSON.parse(output);
+        
+        // Save to cache if successful
+        // For singles, we store the entire result object (not just products array)
+        if (data.success) {
+          await ProductCache.findOneAndUpdate(
+            { categoryId, expansionId: cacheKey },
+            { 
+              categoryId,
+              expansionId: cacheKey,
+              products: [data], // Store entire result as single item
+              lastUpdate: new Date()
+            },
+            { upsert: true, new: true }
+          );
+          console.log(`💾 Singles search cached for "${searchString}"`);
+        }
+        
+        resolve({ ...data, fromCache: false });
+      } catch (err) {
+        resolve({ success: false, error: 'Failed to parse singles search output' });
       }
     });
 
@@ -136,5 +256,6 @@ module.exports = {
   updateOptionsFromCardmarket,
   getCategories,
   getExpansions,
-  scrapeProducts
+  scrapeProducts,
+  searchProducts
 };

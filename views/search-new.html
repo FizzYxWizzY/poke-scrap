@@ -187,11 +187,12 @@
       align-items: center;
     }
     #article-image {
-      max-width: 150px;
-      max-height: 150px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
+      max-width: 280px;
+      max-height: 400px;
+      border-radius: 8px;
+      border: 2px solid var(--border-color);
       margin: 0 auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     /* Tables */
@@ -215,11 +216,15 @@
         <option value="">Chargement...</option>
       </select>
     </div>
-    <div class="filter-group">
+    <div class="filter-group" id="expansion-group">
       <label for="expansion">Extension</label>
       <select id="expansion" name="expansion">
         <option value="">Chargement...</option>
       </select>
+    </div>
+    <div class="filter-group hidden" id="card-search-group">
+      <label for="card-search">ID/Nom Carte</label>
+      <input type="text" id="card-search" placeholder="ex: lortg06, LORTG06, tg06" style="min-width: 160px; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-table-header); color: var(--text-primary); font-size: 12px;">
     </div>
     <div class="filter-group">
       <label for="country">Pays</label>
@@ -281,6 +286,7 @@
     // State
     let selectedProduct = null;
     let currentArticleImage = null;
+    let isSinglesMode = false;
 
     // DOM elements
     const step1 = document.getElementById('step1');
@@ -289,6 +295,8 @@
     const productsGrid = document.getElementById('products-grid');
     const productsLoading = document.getElementById('products-loading');
     const resultsBody = document.getElementById('results-body');
+    const expansionGroup = document.getElementById('expansion-group');
+    const cardSearchGroup = document.getElementById('card-search-group');
 
     // Helpers
     function showMessage(text, type = 'error') {
@@ -303,6 +311,20 @@
     function hideMessage() {
       messageContainer.className = 'hidden';
     }
+
+    // Toggle Singles mode when category changes
+    document.getElementById('category').addEventListener('change', (e) => {
+      const categoryText = e.target.options[e.target.selectedIndex]?.text?.toLowerCase() || '';
+      isSinglesMode = categoryText === 'singles' || categoryText.includes('single');
+      
+      if (isSinglesMode) {
+        expansionGroup.classList.add('hidden');
+        cardSearchGroup.classList.remove('hidden');
+      } else {
+        expansionGroup.classList.remove('hidden');
+        cardSearchGroup.classList.add('hidden');
+      }
+    });
 
     // Load options on page load
     async function loadOptions() {
@@ -331,11 +353,23 @@
     // Search products
     document.getElementById('search-products-btn').addEventListener('click', async () => {
       const categoryId = document.getElementById('category').value;
+      // Sanitize card search: remove all spaces and convert to lowercase
+      const cardSearch = document.getElementById('card-search').value.trim().replace(/\s+/g, '').toLowerCase();
       const expansionId = document.getElementById('expansion').value;
+      const country = document.getElementById('country').value;
+      const language = document.getElementById('language').value;
 
-      if (!categoryId || !expansionId) {
-        showMessage('Sélectionnez catégorie et extension.', 'warning');
-        return;
+      // Validate inputs based on mode
+      if (isSinglesMode) {
+        if (!categoryId || !cardSearch || !country || !language) {
+          showMessage('Sélectionnez catégorie, pays, langue et entrez un ID/nom de carte.', 'warning');
+          return;
+        }
+      } else {
+        if (!categoryId || !expansionId) {
+          showMessage('Sélectionnez catégorie et extension.', 'warning');
+          return;
+        }
       }
 
       hideMessage();
@@ -346,11 +380,83 @@
       productsLoading.classList.remove('hidden');
 
       try {
-        const res = await fetch(`/api/options/products?categoryId=${categoryId}&expansionId=${expansionId}`);
+        let url;
+        if (isSinglesMode) {
+          // Singles use search string with country/language - redirects and scrapes sellers directly
+          url = `/api/options/products?categoryId=${categoryId}&searchString=${encodeURIComponent(cardSearch)}&country=${encodeURIComponent(country)}&language=${encodeURIComponent(language)}`;
+        } else {
+          url = `/api/options/products?categoryId=${categoryId}&expansionId=${expansionId}`;
+        }
+        
+        const res = await fetch(url);
         const data = await res.json();
         productsLoading.classList.add('hidden');
+        
+        console.log('Singles response:', data); // Debug
 
-        if (!data.success || data.productsCount === 0) {
+        // Handle Singles mode - direct result with sellers (redirected case)
+        if (isSinglesMode && data.redirected) {
+          // Direct result - show sellers immediately
+          step1.classList.add('hidden');
+          step2.classList.remove('hidden');
+          step2.classList.add('active');
+          resultsBody.innerHTML = '';
+          
+          currentArticleImage = data.articleImage || null;
+          
+          if (data.noSellers) {
+            resultsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#888;">Aucun vendeur actuellement.</td></tr>`;
+          } else if (data.sellers && data.sellers.length > 0) {
+            data.sellers.forEach(item => {
+              resultsBody.innerHTML += `<tr>
+                <td>${data.productName || '-'}</td>
+                <td>${item.sellerName}</td>
+                <td>${item.sellerLevel}</td>
+                <td>${item.articlePrice}</td>
+                <td>${item.articleAmount}</td>
+                <td>${item.sellerComment || '-'}</td>
+              </tr>`;
+            });
+          } else {
+            resultsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Aucun résultat.</td></tr>`;
+          }
+          
+          // Store product info for watchlist
+          selectedProduct = {
+            name: data.productName,
+            productPath: data.productPath
+          };
+          
+          // Image
+          const articleImg = document.getElementById('article-image');
+          if (currentArticleImage) {
+            articleImg.src = `/images/${currentArticleImage}`;
+            articleImg.style.display = 'block';
+          } else {
+            articleImg.style.display = 'none';
+          }
+          return;
+        }
+
+        // Non-redirected case (multiple results) or regular category search
+        if (!data.success) {
+          showMessage('Erreur lors de la recherche.', 'error');
+          step1.classList.add('hidden');
+          return;
+        }
+        
+        // For singles mode that wasn't redirected - check if we have products array
+        // (This happens when search matches multiple cards)
+        if (isSinglesMode && !data.products) {
+          // Singles redirected case should have been handled above
+          // If we get here with no products, something went wrong
+          showMessage('Aucun résultat trouvé pour cette carte.', 'warning');
+          step1.classList.add('hidden');
+          return;
+        }
+        
+        // Check if we have products to display
+        if (!data.products || data.products.length === 0) {
           showMessage('Aucun produit trouvé.', 'warning');
           step1.classList.add('hidden');
           return;

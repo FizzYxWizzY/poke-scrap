@@ -50,7 +50,7 @@
             <td>${item.articleLanguage}</td>
             <td>${item.sellerCountry}</td>
             <td>
-              ${item.articleImage ? `<img src="/images/${item.articleImage}" style="width: 80px; height: 80px; object-fit: contain; border-radius: 4px; vertical-align: middle; margin-right: 10px;">` : ''}
+              ${item.articleImage ? `<img src="/images/${item.articleImage}" style="max-width: 60px; max-height: 85px; object-fit: contain; border-radius: 4px; vertical-align: middle; margin-right: 10px;">` : ''}
               ${item.articleName}
             </td>
             <td>${item.targetPrice.toFixed(2)}</td>

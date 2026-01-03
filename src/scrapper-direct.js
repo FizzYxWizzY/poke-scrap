@@ -45,7 +45,7 @@ const { countries, languages } = require('../data/cardmarket-data');
 	}
 	
 	// Build URL with exact product path
-	const url = `https://www.cardmarket.com/fr/Pokemon/Products/${productPath}?sellerCountry=${countryMatch.value}&language=${langMatch.value}`;
+	const url = `https://www.cardmarket.com/en/Pokemon/Products/${productPath}?sellerCountry=${countryMatch.value}&language=${langMatch.value}`;
 	
 	const browser = await puppeteer.launch({
 		headless: true,
@@ -65,10 +65,17 @@ const { countries, languages } = require('../data/cardmarket-data');
 		// Wait for listings
 		await page.waitForSelector('.table-body', { timeout: 15000 }).catch(() => {});
 		
-		// Get the image URL first
+		// Get the image URL first - use 2nd img.is-front (1st is previous card in carousel)
 		const imageUrl = await page.evaluate(() => {
-			const imgElement = document.querySelector('img.is-front');
-			return imgElement?.src || null;
+			const imgElements = document.querySelectorAll('img.is-front');
+			const imgElement = imgElements.length > 1 ? imgElements[1] : imgElements[0];
+			if (!imgElement) return null;
+			const dataEcho = imgElement.getAttribute('data-echo');
+			const src = imgElement.src;
+			// Prefer data-echo (real image), ignore transparent placeholder
+			if (dataEcho) return dataEcho;
+			if (src && !src.includes('transparent.gif')) return src;
+			return null;
 		});
 		
 		// Download image

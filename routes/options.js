@@ -5,6 +5,7 @@ const {
   getCategories, 
   getExpansions, 
   scrapeProducts,
+  searchProducts,
   updateOptionsFromCardmarket 
 } = require('../services/optionsService');
 const { languages, countries } = require('../data/cardmarket-data');
@@ -68,10 +69,31 @@ router.post('/refresh', ensureAuth, async (req, res) => {
   }
 });
 
-// 🔹 GET products for a category + expansion combo
+// 🔹 GET products for a category + expansion combo (or search for singles)
 router.get('/products', ensureAuth, async (req, res) => {
-  const { categoryId, expansionId } = req.query;
+  const { categoryId, expansionId, searchString, country, language } = req.query;
   
+  // For singles: use searchString with country/language (required)
+  if (searchString) {
+    if (!categoryId || !country || !language) {
+      return res.status(400).json({ error: 'categoryId, country, and language are required for singles search' });
+    }
+    
+    try {
+      const result = await searchProducts(categoryId, searchString, country, language);
+      
+      if (!result.success) {
+        return res.status(500).json({ error: result.error });
+      }
+      
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+    return;
+  }
+  
+  // For other categories: use categoryId + expansionId
   if (!categoryId || !expansionId) {
     return res.status(400).json({ error: 'categoryId and expansionId are required' });
   }

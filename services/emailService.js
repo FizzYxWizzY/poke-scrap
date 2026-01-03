@@ -22,6 +22,7 @@ function generateArticleRows(articles) {
       <td style="padding: 8px; color: #c1c1c1;">${article.sellerLevel}</td>
       <td style="padding: 8px; color: #4CAF50; font-weight: bold;">${article.articlePrice}</td>
       <td style="padding: 8px; color: #c1c1c1;">${article.articleAmount}</td>
+      <td style="padding: 8px; color: #999; font-style: italic; font-size: 0.9em;">${article.sellerComment || '-'}</td>
     </tr>
   `).join('');
 }
@@ -95,6 +96,7 @@ function generateAlertBlock(alert) {
           <th style="padding: 8px; color: #c1c1c1; text-align: left;">Ventes</th>
           <th style="padding: 8px; color: #c1c1c1; text-align: left;">Prix</th>
           <th style="padding: 8px; color: #c1c1c1; text-align: left;">Qté</th>
+          <th style="padding: 8px; color: #c1c1c1; text-align: left;">Commentaire</th>
         </tr>
         ${generateArticleRows(alert.matchingArticles)}
       </table>

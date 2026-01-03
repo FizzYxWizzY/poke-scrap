@@ -213,9 +213,19 @@ async function getArticlesDirect({ productPath, country, language }) {
   console.log(`🔍 Direct scrape: ${productPath} (${new Date().toISOString()})`);
   
   // Extract category and product name from path for caching
+  // Singles paths are like: Singles/Lost-Origin/Snover-LOR042
+  // Other paths are like: Elite-Trainer-Boxes/151-Elite-Trainer-Box
   const pathParts = productPath.split('/');
-  const category = pathParts[0] || 'unknown';
-  const productName = pathParts[1] || productPath;
+  let category, productName;
+  
+  if (pathParts[0] === 'Singles' && pathParts.length >= 3) {
+    // For Singles: use "Singles" as category and the card name as productName
+    category = 'Singles';
+    productName = pathParts[pathParts.length - 1]; // e.g., "Snover-LOR042"
+  } else {
+    category = pathParts[0] || 'unknown';
+    productName = pathParts[pathParts.length - 1] || productPath;
+  }
   
   const cacheThreshold = new Date(Date.now() - CACHE_DURATION_MS);
 
