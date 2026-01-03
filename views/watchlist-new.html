@@ -461,8 +461,6 @@
     }
 
     async function deleteWatchlist(id) {
-      if (!confirm('Delete this alert?')) return;
-
       try {
         const res = await fetch(`/api/watchlists/${id}`, { method: 'DELETE' });
 
