@@ -2,48 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <title>Poke'Scrap - Ma Watchlist</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <title>Poke'Scrap</title>
-  <style>
-    body { font-family: sans-serif; font-size: 14px; text-align: center; padding: 50px; color: #c1c1c1; background-color: #47284c;}
-    table {
-      font-size: 14px;
-      margin: 20px auto;
-      border-collapse: collapse;
-      width: 80%;
-    }
-
-    th, td {
-      border: 1px solid #c1c1c1;
-      padding: 8px;
-    }
-
-    th {
-      background-color: #232943;
-      color: #c1c1c1;
-    }
-
-    td {
-      background-color: #30385a;
-      color: #c1c1c1;
-    }
-    button.delete-btn {
-      background-color: #cc3333;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-      font-size: 14px;
-      border-radius: 4px;
-    }
-    button.delete-btn:hover {
-      background-color: #ff5555;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-  <img src="/logo.png" alt="logo" width="200px">
+  <img src="/logo.png" alt="logo" class="logo">
   <h1>Ma Watchlist</h1>
+
   <table id="watchlist-table">
     <thead>
       <tr>
@@ -55,10 +21,13 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody id="watchlist-body">
-      <!-- rempli par JS -->
-    </tbody>
+    <tbody id="watchlist-body"></tbody>
   </table>
+
+  <div class="user-area">
+    <button onclick="window.location.href='/api/scrapper'">Rechercher</button>
+    <button onclick="window.location.href='/api/logout'">Déconnexion</button>
+  </div>
 
   <script>
     async function fetchWatchlist() {
@@ -69,7 +38,7 @@
         const tbody = document.getElementById('watchlist-body');
         tbody.innerHTML = '';
 
-        if (data.length === 0) {
+        if (!data.length) {
           tbody.innerHTML = '<tr><td colspan="6">Aucune alerte trouvée.</td></tr>';
           return;
         }
@@ -80,7 +49,10 @@
             <td>${item.articleCategorie}</td>
             <td>${item.articleLanguage}</td>
             <td>${item.sellerCountry}</td>
-            <td>${item.articleName}</td>
+            <td>
+              ${item.articleImage ? `<img src="/images/${item.articleImage}" style="width: 80px; height: 80px; object-fit: contain; border-radius: 4px; vertical-align: middle; margin-right: 10px;">` : ''}
+              ${item.articleName}
+            </td>
             <td>${item.targetPrice.toFixed(2)}</td>
             <td><button class="delete-btn" onclick="deleteWatchlist('${item._id}')">❌</button></td>
           `;
@@ -95,14 +67,12 @@
       if (!confirm('Supprimer cette alerte ?')) return;
 
       try {
-        const res = await fetch(`/api/watchlists/${id}`, {
-          method: 'DELETE'
-        });
-        const data = await res.json();
+        const res = await fetch(`/api/watchlists/${id}`, { method: 'DELETE' });
 
         if (res.ok) {
-          fetchWatchlist(); // refresh
+          fetchWatchlist();
         } else {
+          const data = await res.json();
           alert(data.error || 'Erreur lors de la suppression.');
         }
       } catch (err) {

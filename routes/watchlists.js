@@ -1,28 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const Watchlist = require('../db/models/Watchlist');
-// const mongoose = require('mongoose');
+const ensureAuth = require('../middlewares/auth');
+const { validateWatchlistCreate, validateObjectId } = require('../middlewares/validators');
 
 // 🔹 CREATE (ajouter un article à une watchlist)
-router.post('/', async (req, res) => {
-  console.log(`Req body: ${req.body}`);
-  const { category, language, country, serie, targetPrice } = req.body; // <== req.body ici !
+router.post('/', ensureAuth, validateWatchlistCreate, async (req, res) => {
+  const { category, language, country, serie, targetPrice, articleImage, productPath } = req.body;
   const userEmail = req.session.userEmail;
-  console.log(`cat: ${category}, lang: ${language}, country: ${country}, serie: ${serie}, targetPrice: ${targetPrice}`);
-  if (!userEmail) {
-    return res.status(401).json({ error: "Non connecté" });
-  }
-  // pour vider toute la watchlist (pck j ai pas encore d autre fonction)
-  // decommenter -> add a la watchlist = clear all, et refait une avec l entree actuel (comme sa j peux add a chaque fois la meme et pas apprendre le nom des series pokemachin)
-  // await mongoose.connection.db.dropCollection('watchlists')
-  //   .then(() => console.log('✅ Collection "watchlists" supprimée.'))
-  //   .catch(err => console.log('❌ Erreur :', err));
+
   try {
     const watchlist = await Watchlist.create({
       userEmail: userEmail,
       articleName: serie,
+      articleImage: articleImage || null,
       articleLanguage: language,
       articleCategorie: category,
+      productPath: productPath || null,
       sellerCountry: country,
       targetPrice: targetPrice
     });
@@ -38,12 +32,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 🔹 READ ALL pour le user connecter
-router.get('/', async (req, res) => {
-  if (!req.session.googleId) {
-    return res.status(401).json({ error: 'Utilisateur non authentifié' });
-  }
-
+// 🔹 READ ALL pour le user connecté
+router.get('/', ensureAuth, async (req, res) => {
   try {
     const watchlists = await Watchlist.find({ userEmail: req.session.userEmail });
     return res.json(watchlists);
@@ -54,13 +44,13 @@ router.get('/', async (req, res) => {
 });
 
 // 🔹 UPDATE
-router.put('/:id', async (req, res) => {
-  if (!req.session.googleId) {
-    return res.status(401).json({ error: 'Non authentifié' });
-  }
-
+router.put('/:id', ensureAuth, validateObjectId, async (req, res) => {
   try {
-    const watchlist = await Watchlist.findByIdAndUpdate(req.params.userEmail, req.body, { new: true });
+    const watchlist = await Watchlist.findOneAndUpdate(
+      { _id: req.params.id, userEmail: req.session.userEmail },
+      req.body,
+      { new: true }
+    );
     if (!watchlist) return res.status(404).json({ error: 'Entrée non trouvée' });
     res.json(watchlist);
   } catch (err) {
@@ -69,11 +59,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // 🔹 DELETE
-router.delete('/:id', async (req, res) => {
-  if (!req.session.googleId) {
-    return res.status(401).json({ error: 'Non authentifié' });
-  }
-
+router.delete('/:id', ensureAuth, validateObjectId, async (req, res) => {
   try {
     const deleted = await Watchlist.findOneAndDelete({
       _id: req.params.id,

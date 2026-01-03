@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Poke'Scrap - Recherche</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <img src="/logo.png" alt="logo" class="logo">
+  <h1>Recherche Pokémon</h1>
+
+  <form id="search-form">
+    <label for="category">Catégorie :</label>
+    <select id="category" name="category">
+      <option value="">Chargement...</option>
+    </select>
+
+    <label for="language">Langue :</label>
+    <select id="language" name="language">
+      <option value="">Chargement...</option>
+    </select>
+
+    <label for="country">Pays :</label>
+    <select id="country" name="country">
+      <option value="">Chargement...</option>
+    </select>
+
+    <label for="serie">Série :</label>
+    <input type="text" id="serie" name="serie" placeholder="151, prismatic evolutions, etc...">
+
+    <button type="submit">Chercher</button>
+  </form>
+
+  <div id="watchlist-section" class="watchlist-section" style="display: none;">
+    <h2>Ajouter une alerte de prix</h2>
+    <label for="target-price">Prix souhaité (€) :</label>
+    <input type="number" id="target-price" step="0.01" placeholder="ex: 42.69" style="width: 100px;">
+    <button id="add-watchlist-btn" type="button">Ajouter à la watchlist</button>
+  </div>
+
+  <div id="message-container" style="display: none; text-align: center; margin: 20px 0; padding: 20px; border-radius: 8px;"></div>
+
+  <div id="article-image-container" style="display: none; text-align: center; margin: 20px 0;">
+    <img id="article-image" src="" alt="" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+  </div>
+
+  <table id="results-table" style="display:none;">
+    <thead>
+      <tr>
+        <th>Catégorie</th>
+        <th>Nom</th>
+        <th>Langue</th>
+        <th>Pays</th>
+        <th>Vendeur</th>
+        <th>Niveau</th>
+        <th>Prix</th>
+        <th>Quantité</th>
+        <th>Commentaire</th>
+      </tr>
+    </thead>
+    <tbody id="results-body"></tbody>
+  </table>
+
+  <div class="user-area">
+    <button onclick="window.location.href='/api/watch'">Ma Watchlist</button>
+    <button onclick="window.location.href='/api/logout'">Déconnexion</button>
+  </div>
+
+  <script>
+    const searchForm = document.getElementById('search-form');
+    const watchlistSection = document.getElementById('watchlist-section');
+    const resultsTable = document.getElementById('results-table');
+    const resultsBody = document.getElementById('results-body');
+    const messageContainer = document.getElementById('message-container');
+    
+    // Store the current article image for watchlist
+    let currentArticleImage = null;
+
+    // Load options from API on page load
+    async function loadOptions() {
+      try {
+        const res = await fetch('/api/articles/options');
+        const { categories, languages, countries } = await res.json();
+        
+        // Populate categories
+        const categorySelect = document.getElementById('category');
+        categorySelect.innerHTML = '<option value="">-- Catégorie --</option>';
+        categories.forEach(c => {
+          categorySelect.innerHTML += `<option value="${c.slug}">${c.text}</option>`;
+        });
+        
+        // Populate languages
+        const languageSelect = document.getElementById('language');
+        languageSelect.innerHTML = '<option value="">-- Langue --</option>';
+        languages.forEach(l => {
+          languageSelect.innerHTML += `<option value="${l.text.toLowerCase()}">${l.text}</option>`;
+        });
+        
+        // Populate countries
+        const countrySelect = document.getElementById('country');
+        countrySelect.innerHTML = '<option value="">-- Pays --</option>';
+        countries.forEach(c => {
+          countrySelect.innerHTML += `<option value="${c.text.toLowerCase()}">${c.text}</option>`;
+        });
+      } catch (err) {
+        console.error('Failed to load options:', err);
+      }
+    }
+    loadOptions();
+
+    // Helper to show messages in HTML instead of alerts
+    function showMessage(text, type = 'error') {
+      messageContainer.innerHTML = text;
+      messageContainer.style.display = 'block';
+      messageContainer.style.background = type === 'error' ? '#ffe0e0' : type === 'success' ? '#e0ffe0' : '#fff3cd';
+      messageContainer.style.color = type === 'error' ? '#c00' : type === 'success' ? '#080' : '#856404';
+      messageContainer.style.border = `1px solid ${type === 'error' ? '#c00' : type === 'success' ? '#080' : '#856404'}`;
+    }
+
+    function hideMessage() {
+      messageContainer.style.display = 'none';
+    }
+
+    // Add to watchlist
+    document.getElementById('add-watchlist-btn').addEventListener('click', async () => {
+      const category = document.getElementById('category').value;
+      const language = document.getElementById('language').value;
+      const country = document.getElementById('country').value;
+      const serie = document.getElementById('serie').value;
+      const targetPrice = parseFloat(document.getElementById('target-price').value);
+
+      if (isNaN(targetPrice) || targetPrice <= 0) {
+        showMessage("Veuillez entrer un prix valide.", 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/watchlists', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category, language, country, serie, targetPrice, articleImage: currentArticleImage })
+        });
+
+        if (res.status === 201) {
+          showMessage('✓ Ajouté à la watchlist !', 'success');
+        } else {
+          const data = await res.json();
+          showMessage('Erreur : ' + (data.error || 'Impossible d\'ajouter'), 'error');
+        }
+      } catch (err) {
+        showMessage('Erreur réseau : ' + err.message, 'error');
+      }
+    });
+
+    // Search articles
+    searchForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMessage();
+
+      const category = document.getElementById('category').value;
+      const language = document.getElementById('language').value;
+      const country = document.getElementById('country').value;
+      const serie = document.getElementById('serie').value;
+
+      if (!category || !language || !country || !serie) {
+        showMessage("Veuillez remplir tous les champs.", 'warning');
+        return;
+      }
+
+      const params = new URLSearchParams({ category, language, country, serie });
+
+      try {
+        const res = await fetch(`/api/articles?${params.toString()}`);
+        
+        // Handle 204 No Content (product doesn't exist)
+        if (res.status === 204) {
+          resultsBody.innerHTML = "";
+          resultsTable.style.display = "none";
+          watchlistSection.style.display = 'none';
+          document.getElementById('article-image-container').style.display = 'none';
+          showMessage("🔍 Produit non trouvé sur Cardmarket.<br><small>Vérifiez l'orthographe de la série.</small>", 'error');
+          return;
+        }
+        
+        const data = await res.json();
+        resultsBody.innerHTML = "";
+
+        // Handle "product exists but no sellers" case
+        if (data.noSellers) {
+          resultsTable.style.display = "none";
+          watchlistSection.style.display = 'block';
+          
+          // Show the product image
+          currentArticleImage = data.productInfo?.articleImage || null;
+          const imageContainer = document.getElementById('article-image-container');
+          const articleImg = document.getElementById('article-image');
+          
+          if (currentArticleImage) {
+            articleImg.src = `/images/${currentArticleImage}`;
+            articleImg.alt = data.productInfo?.articleTitle || 'Article';
+            imageContainer.style.display = 'block';
+          } else {
+            imageContainer.style.display = 'none';
+          }
+          
+          // Show message instead of table
+          resultsBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 20px; color: #888;">
+            Aucun vendeur pour ce produit actuellement.<br>
+            <small>Vous pouvez quand même l'ajouter à votre watchlist pour être alerté.</small>
+          </td></tr>`;
+          resultsTable.style.display = "table";
+          return;
+        }
+
+        // Handle normal array response (product not found)
+        if (!data.length) {
+          resultsTable.style.display = "none";
+          watchlistSection.style.display = 'none';
+          document.getElementById('article-image-container').style.display = 'none';
+          showMessage("🔍 Aucun article trouvé.<br><small>Vérifiez l'orthographe de la série.</small>", 'error');
+          return;
+        }
+
+        resultsTable.style.display = "table";
+        watchlistSection.style.display = 'block';
+        
+        // Store and display the article image
+        currentArticleImage = data[0]?.articleImage || null;
+        const imageContainer = document.getElementById('article-image-container');
+        const articleImg = document.getElementById('article-image');
+        
+        if (currentArticleImage) {
+          articleImg.src = `/images/${currentArticleImage}`;
+          articleImg.alt = data[0]?.articleName || 'Article';
+          imageContainer.style.display = 'block';
+        } else {
+          imageContainer.style.display = 'none';
+        }
+
+        data.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${item.articleCategorie}</td>
+            <td>${item.articleName}</td>
+            <td>${item.articleLanguage}</td>
+            <td>${item.sellerCountry}</td>
+            <td>${item.sellerName}</td>
+            <td>${item.sellerLevel}</td>
+            <td>${item.articlePrice}</td>
+            <td>${item.articleAmount}</td>
+            <td>${item.sellerComment || '-'}</td>
+          `;
+          resultsBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error("Erreur lors de la recherche :", error);
+        showMessage("Erreur lors de la recherche. Veuillez réessayer.", 'error');
+      }
+    });
+  </script>
+</body>
+</html>

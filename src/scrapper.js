@@ -61,60 +61,41 @@ CATEGORIES:
 			Apparel
 */
 
-// j ai la flemme et jsp les quelles sont worth a prendre pour les categories mdr
-// le reste est full ;)
+// Load data from cardmarket-data.js
+const { categories, languages, countries } = require('../data/cardmarket-data');
 
-const categories = [
-	["etb", "Elite-Trainer-Boxes", "-Elite-Trainer-Box"],
-	["booster", "Boosters", "-Booster"]
-];
-
-const languages = [
-	["english", "1", "en"],
-	["french", "2", "fr"],
-	["german", "3", "de"],
-	["spanish", "4", "es"],
-	["italian", "5", "it"],
-	["portugese", "8", "pt"]
-];
-
-const countries = [
-	["austria", "1", "at"],
-	["belgium", "2", "be"],
-	["bulgaria", "3", "bg"],
-	["canada", "33", "ca"],
-	["croatia", "35", "cr"],
-	["cyprus", "5", "cy"],
-	["czech republic", "6", "cz"],
-	["denmark", "8", "dk"],
-	["estonia", "9", "ee"],
-	["finland", "11", "fl"],
-	["france", "12", "fr"],
-	["germany", "7", "de"],
-	["greece", "14", "gr"],
-	["hungary", "15", "hu"],
-	["iceland", "37", "is"],
-	["ireland", "16", "ie"],
-	["italy", "17", "it"],
-	["japan", "36", "jp"],
-	["latvia", "21", "lv"],
-	["liechtenstein", "18", "li"],
-	["lithuania", "19", "lt"],
-	["luxembourg", "20", "lu"],
-	["malta", "21", "mt"],
-	["netherland", "23", "nl"],
-	["norway", "24", "no"],
-	["poland", "25", "pl"],
-	["portugal", "26", "pt"],
-	["romania", "27", "ro"],
-	["singapore", "29", "sg"],
-	["slovakia", "31", "sk"],
-	["slovenia", "30", "sl"],
-	["spain", "10", "es"],
-	["sweden", "28", "se"],
-	["switzerland", "4", "ch"],
-	["united kingdom", "13", "uk"]
-];
+// Product suffix mapping for URL building
+const productSuffixes = {
+	"Elite-Trainer-Boxes": "-Elite-Trainer-Box",
+	"Boosters": "-Booster",
+	"Booster-Boxes": "-Booster-Box",
+	"Blisters": "-Blister",
+	"Theme-Decks": "-Theme-Deck",
+	"Trainer-Kits": "-Trainer-Kit",
+	"Tins": "-Tin",
+	"Box-Sets": "-Box-Set",
+	"Singles": "", // No suffix for singles
+	"Coins": "",
+	"Lots": "",
+	"Sleeves": "",
+	"Playmats": "",
+	"Deck-Boxes": "",
+	"Albums": "",
+	"Storage": "",
+	"Pocket-Pages": "",
+	"Dice": "",
+	"Dividers": "",
+	"Memorabilia": "",
+	"Life-Counter": "",
+	"Gaming-Stones": "",
+	"Game-Kits": "",
+	"Card-Scanners": "",
+	"Apparel": "",
+	"Books-Comics-Guides": "",
+	"Dice-Bags": "",
+	"Grading": "",
+	"Sets": ""
+};
 
 // UPGRADE:	add proxy usage like tor etc...
 // 			so i could escape possible ip ban
@@ -122,96 +103,192 @@ const countries = [
 (async () => {
   
 	let args = process.argv.slice(2);
-	let i = 0;
-	let product = '';
-	let productExt = '';
-	let categorie = '';
+	let categorySlug = '';
+	let productSuffix = '';
 	let rawProduct = '';
-	let lang = '';
-	let langExt = '';
-	let country = '';
-	let countryExt = '';
+	let countryValue = '';
+	let langValue = '';
 	
 	if (args.length != 4) {
 		return 1;
 	} else {
+		// args[0] = category slug (e.g., "Elite-Trainer-Boxes" or "etb" for backwards compatibility)
 		let input = args[0];
-
-		let match = categories.find(([name]) => name === input.toLowerCase());
-		if (match) {
-			const [_, cat, prod] = match;
-			categorie = cat;
-			productExt = prod;
-	    	// console.log(`cat: ${cat}, prod: ${prod}\n`);
+		
+		// Support both old format (etb, booster) and new format (slug)
+		const legacyMap = { 'etb': 'Elite-Trainer-Boxes', 'booster': 'Boosters' };
+		if (legacyMap[input.toLowerCase()]) {
+			categorySlug = legacyMap[input.toLowerCase()];
 		} else {
-			console.log("Not found.");
-		}
-	  
-		rawProduct = args[1];
-		product = rawProduct.replace(/ /g, '-') +  productExt; // '-Booster'
-		//   console.log(`product: ${product}\n`);
-
-		input = args[2]
-		match = countries.find(([name]) => name === input.toLowerCase());
-		if (match) {
-			const [_, uri, ext] = match;
-			country = uri;
-			countryExt = ext;
-			// console.log(`cat: ${country}, prod: ${countryExt}\n`);
-		} else {
-			console.log("Not found.");
-		}
-
-		input = args[3]
-		match = languages.find(([name]) => name === input.toLowerCase());
-		if (match) {
-			const [_, uri, ext] = match;
-			lang = uri;
-			langExt = ext;
-	    	// console.log(`cat: ${lang}, prod: ${langExt}\n`);
-		} else {
-			console.log("Not found.");
-		}
-	}
-
-	const url = 'https://www.cardmarket.com/fr/Pokemon/Products/' + categorie + '/' + product +'?' + 'sellerCountry=' + country + '&' + 'language=' + lang;
-	//   console.log(`\n\nurl: ${url}\n\n\n`);
-	const browser = await puppeteer.launch({
-		headless: true,
-		args: [ // pour etre plus discret (idk if tor proxy blocked or it just doesnt work)
-			// '--proxy-server=socks5://127.0.0.1:9050',
-			'--no-sandbox',
-			'--disable-setuid-sandbox',
-			'--disable-blink-features=AutomationControlled'
-		  ]
-	}); // set to false for debugging
-	const page = await browser.newPage();
-
-	await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
-
-	await page.goto(url, { waitUntil: 'domcontentloaded' });
-
-	// Wait for a known wrapper that shows listings
-	await page.waitForSelector('.table-body');
-
-	const products = await page.evaluate(() => {
-    	const items = [];
-		const listings = document.querySelectorAll('.table-body .row');
-
-    	listings.forEach(row => {
-			const article = document.querySelector('h1').innerText.trim(); // Only 1 product name on the page
-    		const seller = row.querySelector('.d-flex span')?.innerText.trim();
-			const parts = seller.split('\n');
-    		const name = parts.pop().trim(); // last part is the name
-    		const sales = parts.join('').trim(); // rest is the number, e.g., '1K' or '4'
-			const price = row.querySelector('.price-container span')?.innerText.trim();
-			const amount = row.querySelector('.amount-container span')?.innerText.trim();
-    		if (name && price) {
-				items.push({ article, name, sales, price , amount});
+			// Try to find by slug
+			let match = categories.find(c => c.slug.toLowerCase() === input.toLowerCase());
+			if (match) {
+				categorySlug = match.slug;
+			} else {
+				console.log("Category not found.");
+				console.log(JSON.stringify([]));
+				return;
 			}
-    	});
-    	return items;
-	});
-	console.log(JSON.stringify(products, null, 2));
-	await browser.close();
+		}
+		productSuffix = productSuffixes[categorySlug] || '';
+	  
+		// args[1] = product name (e.g., "151", "prismatic evolutions")
+		rawProduct = args[1];
+		const product = rawProduct.replace(/ /g, '-') + productSuffix;
+
+		// args[2] = country (by name or code)
+		input = args[2];
+		let countryMatch = countries.find(c => 
+			c.text.toLowerCase() === input.toLowerCase() || 
+			c.code.toLowerCase() === input.toLowerCase()
+		);
+		if (countryMatch) {
+			countryValue = countryMatch.value;
+		} else {
+			console.log("Country not found.");
+			console.log(JSON.stringify([]));
+			return;
+		}
+
+		// args[3] = language (by name or code)
+		input = args[3];
+		let langMatch = languages.find(l => 
+			l.text.toLowerCase() === input.toLowerCase() || 
+			l.code.toLowerCase() === input.toLowerCase()
+		);
+		if (langMatch) {
+			langValue = langMatch.value;
+		} else {
+			console.log("Language not found.");
+			console.log(JSON.stringify([]));
+			return;
+		}
+
+		const url = 'https://www.cardmarket.com/fr/Pokemon/Products/' + categorySlug + '/' + product + '?sellerCountry=' + countryValue + '&language=' + langValue;
+		// console.log(`\n\nurl: ${url}\n\n\n`);
+		
+		const browser = await puppeteer.launch({
+			headless: true,
+			args: [
+				'--no-sandbox',
+				'--disable-setuid-sandbox',
+				'--disable-blink-features=AutomationControlled'
+			]
+		});
+		const page = await browser.newPage();
+
+		await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
+
+		await page.goto(url, { waitUntil: 'domcontentloaded' });
+
+		// Wait for a known wrapper that shows listings
+		await page.waitForSelector('.table-body');
+
+		// Get the image URL first
+		const imageUrl = await page.evaluate(() => {
+			const imgElement = document.querySelector('img.is-front');
+			return imgElement?.src || null;
+		});
+
+		// Download image using page's cookies/context via CDP
+		let localImageFilename = null;
+		if (imageUrl) {
+			try {
+				const fs = require('fs');
+				const path = require('path');
+				const crypto = require('crypto');
+				
+				// Use page.goto to fetch the image with same session
+				const imgPage = await browser.newPage();
+				
+				// Copy cookies from main page
+				const cookies = await page.cookies();
+				await imgPage.setCookie(...cookies);
+				await imgPage.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
+				
+				const response = await imgPage.goto(imageUrl, { waitUntil: 'networkidle0' });
+				
+				if (response && response.ok()) {
+					const buffer = await response.buffer();
+					
+					const hash = crypto.createHash('md5').update(imageUrl).digest('hex');
+					const contentType = response.headers()['content-type'] || '';
+					const ext = contentType.includes('jpeg') ? '.jpg' : '.png';
+					localImageFilename = `${hash}${ext}`;
+					
+					const imagesDir = path.join(__dirname, '..', 'public', 'images');
+					if (!fs.existsSync(imagesDir)) {
+						fs.mkdirSync(imagesDir, { recursive: true });
+					}
+					
+					fs.writeFileSync(path.join(imagesDir, localImageFilename), buffer);
+				}
+				
+				await imgPage.close();
+			} catch (err) {
+				// Image download failed, continue without it
+				console.error('Image download error:', err.message);
+			}
+		}
+
+		const products = await page.evaluate(() => {
+			const items = [];
+			const listings = document.querySelectorAll('.table-body .row');
+			const articleImage = document.querySelector('img.is-front')?.src || null;
+			const articleTitle = document.querySelector('h1')?.innerText.trim() || null;
+			
+			// Check if this is a product page (has price listings area) or a category page
+			const isProductPage = document.querySelector('.table-body') !== null && 
+			                      document.querySelector('.info-list-container') !== null;
+
+			listings.forEach(row => {
+				const article = articleTitle;
+				const seller = row.querySelector('.d-flex span')?.innerText.trim();
+				if (!seller) return;
+				const parts = seller.split('\n');
+				const name = parts.pop().trim(); // last part is the name
+				const sales = parts.join('').trim(); // rest is the number, e.g., '1K' or '4'
+				const price = row.querySelector('.price-container span')?.innerText.trim();
+				const amount = row.querySelector('.amount-container span')?.innerText.trim();
+				const comment = row.querySelector('.text-truncate.text-muted.fst-italic.small')?.innerText.trim() || null;
+				if (name && price) {
+					items.push({ article, articleImage, name, sales, price, amount, comment });
+				}
+			});
+			
+			// Return metadata about the product even if no sellers
+			return {
+				productExists: !!articleTitle && isProductPage,
+				articleTitle,
+				articleImage,
+				items
+			};
+		});
+		
+		// If product doesn't exist (no title found), return empty array
+		if (!products.productExists) {
+			console.log(JSON.stringify([]));
+			await browser.close();
+			return;
+		}
+		
+		// Replace remote image URL with local filename
+		const productsWithLocalImage = products.items.map(p => ({
+			...p,
+			localImage: localImageFilename
+		}));
+		
+		// If product exists but no sellers, return a special marker with product info
+		if (productsWithLocalImage.length === 0) {
+			console.log(JSON.stringify({
+				noSellers: true,
+				articleTitle: products.articleTitle,
+				localImage: localImageFilename
+			}));
+		} else {
+			console.log(JSON.stringify(productsWithLocalImage));
+		}
+		
+		await browser.close();
+	}
 })();

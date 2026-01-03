@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Poke'Scrap - Recherche</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* Compact filters bar - matching watchlist purple theme */
+    .filters-bar {
+      max-width: 900px;
+      margin: 10px auto 15px;
+      padding: 12px 15px;
+      background: var(--bg-table-cell);
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .filter-group label {
+      color: var(--text-primary);
+      font-size: 0.75em;
+      text-transform: uppercase;
+    }
+    .filter-group select {
+      min-width: 140px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-table-header);
+      color: var(--text-primary);
+      font-size: 12px;
+    }
+    .filter-group select:focus {
+      outline: none;
+      border-color: var(--accent-hover);
+    }
+    .filters-bar button {
+      padding: 6px 14px;
+      font-size: 12px;
+      margin: 0;
+    }
+
+    /* Steps container - matching purple theme */
+    .step { 
+      max-width: 900px; 
+      margin: 10px auto; 
+      padding: 15px; 
+      border: 2px solid var(--border-color); 
+      border-radius: 6px; 
+      background: var(--bg-table-cell);
+      text-align: center;
+    }
+    .step.active { 
+      box-shadow: 0 0 8px rgba(49, 57, 90, 0.5);
+    }
+    .step h3 { 
+      margin: 0 0 12px 0; 
+      color: var(--text-primary);
+      font-size: 0.9em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .step-number { 
+      display: inline-flex; 
+      align-items: center;
+      justify-content: center;
+      width: 20px; 
+      height: 20px; 
+      background: var(--accent-hover); 
+      color: #fff; 
+      border-radius: 50%; 
+      font-size: 0.7em;
+      font-weight: bold;
+    }
+    
+    /* Products grid */
+    .products-grid { 
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .product-card { 
+      border: 1px solid var(--border-color); 
+      border-radius: 4px; 
+      padding: 6px; 
+      cursor: pointer; 
+      transition: all 0.15s; 
+      background: var(--bg-table-header);
+      width: 120px;
+      text-align: center;
+    }
+    .product-card:hover { 
+      border-color: var(--accent-hover);
+      background: var(--bg-table-cell);
+    }
+    .product-card.selected { 
+      border-color: #28a745; 
+      background: rgba(40, 167, 69, 0.15);
+    }
+    .product-card img { 
+      width: 100%; 
+      height: 70px; 
+      object-fit: contain;
+    }
+    .product-card .name { 
+      font-size: 0.7em;
+      color: var(--text-primary);
+      margin-top: 4px;
+      line-height: 1.2;
+    }
+    
+    /* Loading & messages */
+    .loading { text-align: center; padding: 12px; color: var(--text-primary); font-size: 0.85em; }
+    .hidden { display: none !important; }
+    #message-container { 
+      max-width: 900px;
+      margin: 8px auto; 
+      padding: 10px; 
+      border-radius: 4px;
+      text-align: center;
+      font-size: 0.85em;
+    }
+
+    /* Watchlist section */
+    .watchlist-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding: 10px;
+      background: var(--bg-table-header);
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+    .watchlist-section label {
+      color: var(--text-primary);
+      font-size: 0.8em;
+    }
+    .watchlist-section input {
+      padding: 5px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-table-cell);
+      color: var(--text-primary);
+      width: 80px;
+      font-size: 12px;
+    }
+    .watchlist-section button {
+      padding: 5px 12px;
+      font-size: 12px;
+    }
+
+    /* User area */
+    .user-area {
+      max-width: 900px;
+      margin: 15px auto;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .user-area button {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* Article image */
+    #article-image-container {
+      width: 100%;
+      text-align: center;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #article-image {
+      max-width: 150px;
+      max-height: 150px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      margin: 0 auto;
+    }
+
+    /* Tables */
+    #results-table {
+      font-size: 12px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <img src="/logo.png" alt="logo" class="logo">
+  <h1>Recherche Pokémon</h1>
+
+  <div id="message-container" class="hidden"></div>
+
+  <!-- All filters in one compact bar -->
+  <div id="filters-bar" class="filters-bar">
+    <div class="filter-group">
+      <label for="category">Catégorie</label>
+      <select id="category" name="category">
+        <option value="">Chargement...</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="expansion">Extension</label>
+      <select id="expansion" name="expansion">
+        <option value="">Chargement...</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="country">Pays</label>
+      <select id="country" name="country">
+        <option value="">Chargement...</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="language">Langue</label>
+      <select id="language" name="language">
+        <option value="">Chargement...</option>
+      </select>
+    </div>
+    <button id="search-products-btn" type="button">Rechercher</button>
+  </div>
+
+  <!-- STEP 1: Products Grid (hidden until search) -->
+  <div id="step1" class="step hidden">
+    <h3><span class="step-number">1</span>Choisir un Produit</h3>
+    <div id="products-loading" class="loading hidden">Recherche des produits...</div>
+    <div id="products-grid" class="products-grid"></div>
+  </div>
+
+  <!-- STEP 2: Results -->
+  <div id="step2" class="step hidden">
+    <h3><span class="step-number">2</span>Résultats</h3>
+    
+    <div id="watchlist-section" class="watchlist-section">
+      <label for="target-price">Prix souhaité (€) :</label>
+      <input type="number" id="target-price" step="0.01" placeholder="ex: 42.69" style="width: 100px;">
+      <button id="add-watchlist-btn" type="button">Ajouter à la watchlist</button>
+    </div>
+
+    <div id="article-image-container">
+      <img id="article-image" src="" alt="">
+    </div>
+
+    <table id="results-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Vendeur</th>
+          <th>Niveau</th>
+          <th>Prix</th>
+          <th>Quantité</th>
+          <th>Commentaire</th>
+        </tr>
+      </thead>
+      <tbody id="results-body"></tbody>
+    </table>
+  </div>
+
+  <div class="user-area">
+    <button onclick="window.location.href='/api/watch'">Ma Watchlist</button>
+    <button onclick="window.location.href='/api/logout'">Déconnexion</button>
+  </div>
+
+  <script>
+    // State
+    let selectedProduct = null;
+    let currentArticleImage = null;
+
+    // DOM elements
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const messageContainer = document.getElementById('message-container');
+    const productsGrid = document.getElementById('products-grid');
+    const productsLoading = document.getElementById('products-loading');
+    const resultsBody = document.getElementById('results-body');
+
+    // Helpers
+    function showMessage(text, type = 'error') {
+      messageContainer.innerHTML = text;
+      messageContainer.className = '';
+      messageContainer.style.display = 'block';
+      messageContainer.style.background = type === 'error' ? '#401010' : type === 'success' ? '#104010' : '#403010';
+      messageContainer.style.color = type === 'error' ? '#f88' : type === 'success' ? '#8f8' : '#fc8';
+      messageContainer.style.border = '1px solid ' + (type === 'error' ? '#600' : type === 'success' ? '#060' : '#640');
+    }
+
+    function hideMessage() {
+      messageContainer.className = 'hidden';
+    }
+
+    // Load options on page load
+    async function loadOptions() {
+      try {
+        const res = await fetch('/api/options');
+        const { categories, expansions, languages, countries } = await res.json();
+
+        document.getElementById('category').innerHTML = '<option value="">-- Catégorie --</option>' +
+          categories.map(c => `<option value="${c.value}">${c.text}</option>`).join('');
+
+        document.getElementById('expansion').innerHTML = '<option value="">-- Extension --</option>' +
+          expansions.map(e => `<option value="${e.value}">${e.text}</option>`).join('');
+
+        document.getElementById('language').innerHTML = '<option value="">-- Langue --</option>' +
+          languages.map(l => `<option value="${l.text.toLowerCase()}">${l.text}</option>`).join('');
+
+        document.getElementById('country').innerHTML = '<option value="">-- Pays --</option>' +
+          countries.map(c => `<option value="${c.text.toLowerCase()}">${c.text}</option>`).join('');
+
+      } catch (err) {
+        showMessage('Erreur de chargement: ' + err.message, 'error');
+      }
+    }
+    loadOptions();
+
+    // Search products
+    document.getElementById('search-products-btn').addEventListener('click', async () => {
+      const categoryId = document.getElementById('category').value;
+      const expansionId = document.getElementById('expansion').value;
+
+      if (!categoryId || !expansionId) {
+        showMessage('Sélectionnez catégorie et extension.', 'warning');
+        return;
+      }
+
+      hideMessage();
+      step1.classList.remove('hidden');
+      step1.classList.add('active');
+      step2.classList.add('hidden');
+      productsGrid.innerHTML = '';
+      productsLoading.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/api/options/products?categoryId=${categoryId}&expansionId=${expansionId}`);
+        const data = await res.json();
+        productsLoading.classList.add('hidden');
+
+        if (!data.success || data.productsCount === 0) {
+          showMessage('Aucun produit trouvé.', 'warning');
+          step1.classList.add('hidden');
+          return;
+        }
+
+        data.products.forEach(product => {
+          const card = document.createElement('div');
+          card.className = 'product-card';
+          card.innerHTML = `
+            ${product.localImage ? `<img src="/images/${product.localImage}" alt="${product.name}">` : '<div style="height:70px;background:#333;"></div>'}
+            <div class="name">${product.name}</div>
+          `;
+          card.addEventListener('click', () => selectAndScrape(card, product));
+          productsGrid.appendChild(card);
+        });
+
+      } catch (err) {
+        productsLoading.classList.add('hidden');
+        showMessage('Erreur: ' + err.message, 'error');
+      }
+    });
+
+    // Select product and scrape immediately
+    async function selectAndScrape(card, product) {
+      const country = document.getElementById('country').value;
+      const language = document.getElementById('language').value;
+
+      if (!country || !language) {
+        showMessage('Sélectionnez pays et langue avant de choisir un produit.', 'warning');
+        return;
+      }
+
+      // Select card
+      document.querySelectorAll('.product-card.selected').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedProduct = product;
+
+      hideMessage();
+      showMessage('Scraping...', 'warning');
+
+      try {
+        const res = await fetch(`/api/articles/direct?productPath=${encodeURIComponent(product.productPath)}&country=${country}&language=${language}`);
+        
+        if (res.status === 204) {
+          showMessage('Produit non trouvé.', 'error');
+          return;
+        }
+
+        const data = await res.json();
+        hideMessage();
+
+        // Show results
+        step2.classList.remove('hidden');
+        step2.classList.add('active');
+        resultsBody.innerHTML = '';
+        
+        if (data.noSellers) {
+          resultsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#888;">Aucun vendeur actuellement.</td></tr>`;
+          currentArticleImage = data.productInfo?.articleImage || null;
+        } else if (Array.isArray(data) && data.length > 0) {
+          currentArticleImage = data[0]?.articleImage || null;
+          data.forEach(item => {
+            resultsBody.innerHTML += `<tr>
+              <td>${item.articleName || product.name}</td>
+              <td>${item.sellerName}</td>
+              <td>${item.sellerLevel}</td>
+              <td>${item.articlePrice}</td>
+              <td>${item.articleAmount}</td>
+              <td>${item.sellerComment || '-'}</td>
+            </tr>`;
+          });
+        } else {
+          resultsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Aucun résultat.</td></tr>`;
+        }
+
+        // Image
+        const articleImg = document.getElementById('article-image');
+        if (currentArticleImage) {
+          articleImg.src = `/images/${currentArticleImage}`;
+          articleImg.style.display = 'block';
+        } else if (product.localImage) {
+          articleImg.src = `/images/${product.localImage}`;
+          articleImg.style.display = 'block';
+        } else {
+          articleImg.style.display = 'none';
+        }
+
+      } catch (err) {
+        showMessage('Erreur: ' + err.message, 'error');
+      }
+    }
+
+    // Add to watchlist
+    document.getElementById('add-watchlist-btn').addEventListener('click', async () => {
+      const country = document.getElementById('country').value;
+      const language = document.getElementById('language').value;
+      const targetPrice = parseFloat(document.getElementById('target-price').value);
+
+      if (!selectedProduct || isNaN(targetPrice) || targetPrice <= 0) {
+        showMessage('Entrez un prix valide.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/watchlists', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            category: selectedProduct.productPath.split('/')[0],
+            serie: selectedProduct.name,
+            productPath: selectedProduct.productPath,
+            language, country, targetPrice, 
+            articleImage: currentArticleImage 
+          })
+        });
+
+        if (res.status === 201) {
+          showMessage('✓ Ajouté à la watchlist !', 'success');
+        } else {
+          const data = await res.json();
+          showMessage('Erreur: ' + (data.error || 'Échec'), 'error');
+        }
+      } catch (err) {
+        showMessage('Erreur: ' + err.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Poke'Scrap - Tableau de bord</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <img src="/logo.png" alt="logo" class="logo">
+  <h1>Bonjour, <span id="user-name"></span>!</h1>
+  <img id="user-avatar" class="profile-img" src="" alt="Photo de profil" width="100px" />
+
+  <div class="user-area">
+    <button onclick="window.location.href='/api/scrapper'">Rechercher</button>
+    <button onclick="window.location.href='/api/watch'">Ma Watchlist</button>
+    <button onclick="window.location.href='/api/logout'">Déconnexion</button>
+  </div>
+
+  <script>
+    fetch('/api/user')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('user-name').textContent = data.name;
+        document.getElementById('user-avatar').src = data.picture;
+      })
+      .catch(error => {
+        console.error('Erreur lors du fetch :', error);
+        window.location.href = '/';
+      });
+  </script>
+</body>
+</html>

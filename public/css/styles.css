@@ -1,0 +1,126 @@
+/* Main application styles */
+:root {
+  --bg-primary: #47284c;
+  --bg-table-header: #232943;
+  --bg-table-cell: #30385a;
+  --text-primary: #c1c1c1;
+  --border-color: #c1c1c1;
+  --accent-hover: #31395a;
+  --delete-btn: #cc3333;
+  --delete-btn-hover: #ff5555;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  font-size: 14px;
+  text-align: center;
+  padding: 50px;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  margin: 0;
+}
+
+/* Logo */
+.logo {
+  width: 200px;
+  margin-bottom: 20px;
+}
+
+/* Buttons */
+button {
+  font-size: 18px;
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+
+button:hover {
+  border-color: var(--accent-hover);
+}
+
+.delete-btn {
+  background-color: var(--delete-btn);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.delete-btn:hover {
+  background-color: var(--delete-btn-hover);
+}
+
+/* Tables */
+table {
+  font-size: 14px;
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 80%;
+}
+
+th, td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
+}
+
+th {
+  background-color: var(--bg-table-header);
+  color: var(--text-primary);
+}
+
+td {
+  background-color: var(--bg-table-cell);
+  color: var(--text-primary);
+}
+
+/* Forms */
+form {
+  margin: 20px 0;
+}
+
+label {
+  margin: 0 5px;
+}
+
+select, input[type="text"], input[type="number"] {
+  padding: 5px;
+  margin: 0 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+/* Profile image */
+.profile-img {
+  margin-bottom: 20px;
+  border-radius: 100%;
+}
+
+/* User area */
+.user-area {
+  margin-top: 20px;
+}
+
+.user-area button {
+  margin: 0 10px;
+}
+
+/* Watchlist section */
+.watchlist-section {
+  margin-top: 30px;
+}
+
+/* Links */
+a {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const router = express.Router();
 const passport = require('passport');
 
@@ -15,7 +16,7 @@ router.get('/google/callback',
         req.session.displayName = req.user.displayName;
         req.session.googleId = req.user.googleId;
         req.session.userPicture = req.user.userPicture;
-        res.sendFile('/home/user/poke-scrap/views/test2.html');
+        res.redirect('/dashboard');
     }
 );
 

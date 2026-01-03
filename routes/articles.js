@@ -1,131 +1,104 @@
 const express = require('express');
 const router = express.Router();
 const Article = require('../db/models/Article');
-const { spawn } = require('child_process');
+const ensureAuth = require('../middlewares/auth');
+const { validateArticleSearch, validateObjectId } = require('../middlewares/validators');
+const { getArticles, preSearch, getArticlesDirect } = require('../services/articleService');
+const { categories, languages, countries } = require('../data/cardmarket-data');
 
-// 🔹 CREATE
-router.get('/', async (req, res) => {
-	if (!req.isAuthenticated()) return res.status(401).json({ error: 'Non connecté' });
-  
-	const { category, language, country, serie } = req.query;
-  
-	if (!category || !language || !country || !serie) {
-	  return res.status(400).send('Erreur : paramètres manquants');
-	}
-  
-	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-  
-	try {
-	  // Cherche les articles récents
-	  const articles = await Article.find({
-		articleName: serie,
-		articleLanguage: language,
-		articleCategorie: category,
-		sellerCountry: country,
-		lastUpdate: { $gt: fiveMinutesAgo }
-	  });
-  
-	  // Si on a trouvé des articles récents, les retourner
-	  if (articles.length > 0) {
-		console.log(`✅ Données récentes trouvées dans la base. (${new Date().toISOString()})`);
-		return res.json(articles);
-	  }
-  
-	  console.log(`❌ Pas de données récentes, lancement du scrapper... (${new Date().toISOString()})`);
-  
-	  // Lancer le scrapper
-	  console.log(`✅ Lancement du scrapper... (${new Date().toISOString()})`);
-	  const scrapper = spawn('node', ['src/scrapper.js', category, serie, country, language]);
-  
-	  let output = '';
-	  scrapper.stdout.on('data', data => output += data.toString());
-	  scrapper.stderr.on('data', data => console.error(`Erreur scrapper : ${data}`));
-  
-	  scrapper.on('close', async code => {
-		if (code !== 0) return res.status(500).send('Erreur du scrapper');
-  
-		try {
-		  const result = JSON.parse(output);
-  
-		  const cleanedArticles = result.map(article => ({
-			articleName: serie,
-			articlePrice: article.price,
-			articleAmount: article.amount,
-			articleLanguage: language,
-			articleCategorie: category,
-			sellerName: article.name,
-			sellerLevel: article.sales,
-			sellerCountry: country,
-			lastUpdate: Date.now()
-		  }));
-  
-		  // Upsert chaque article
-		  for (const article of cleanedArticles) {
-			await Article.findOneAndUpdate(
-			  {
-				articleName: article.articleName,
-				articlePrice: article.articlePrice,
-				articleLanguage: article.articleLanguage,
-				articleCategorie: article.articleCategorie,
-				sellerName: article.sellerName,
-				sellerCountry: article.sellerCountry
-			  },
-			  article,
-			  { upsert: true }
-			);
-		  }
-  
-		  // Supprimer les anciens articles
-		  await Article.deleteMany({
-			articleName: serie,
-			articleLanguage: language,
-			articleCategorie: category,
-			lastUpdate: { $lt: fiveMinutesAgo }
-		  });
-  
-		  console.log(`✅ Articles mis à jour et nettoyés. (${new Date().toISOString()})`);
-  
-		  const articles = await Article.find({
-			articleName: serie,
-			articleLanguage: language,
-			articleCategorie: category,
-			sellerCountry: country,
-			lastUpdate: { $gt: fiveMinutesAgo }
-		  });
-	  
-		  // Si on a trouvé des articles récents, les retourner
-		  if (articles.length > 0) {
-			console.log(`✅ Données récentes trouvées dans la base. (${new Date().toISOString()})`);
-			return res.json(articles);
-		  } else {
-			console.log(`❌ Aucunes données récentes trouvées dans la base. (${new Date().toISOString()})`);
-			return res.status(204).send('No Data Sorry. ' + err.message);
-		  }
-		} catch (err) {
-		  console.error('❌ Erreur parsing JSON ou enregistrement:', err.message);
-		  return res.redirect(`/scrapper`);
-		}
-	  });
-  
-	} catch (err) {
-	  console.error('❌ Erreur MongoDB :', err.message);
-	  return res.status(500).json({ error: err.message });
-	}
-  });
+// 🔹 GET Cardmarket options (categories, languages, countries)
+router.get('/options', ensureAuth, (req, res) => {
+  res.json({ categories, languages, countries });
+});
 
-// 🔹 READ ONE (by ID, with seller)
-// router.get('/:id', async (req, res) => {
-//   try {
-//     const article = await Article.findById(req.params.id).populate('seller');
-//     if (!article) return res.status(404).json({ error: 'Article not found' });
-//     res.json(article);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
+// 🔹 PRE-SEARCH: Get all matching products for a category + search term
+router.get('/presearch', ensureAuth, async (req, res) => {
+  const { category, search } = req.query;
+  
+  if (!category || !search) {
+    return res.status(400).json({ error: 'category and search are required' });
+  }
+  
+  try {
+    const result = await preSearch(category, search);
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('❌ Pre-search error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 DIRECT SEARCH: Scrape a specific product by its path
+router.get('/direct', ensureAuth, async (req, res) => {
+  const { productPath, country, language } = req.query;
+  
+  if (!productPath || !country || !language) {
+    return res.status(400).json({ error: 'productPath, country, and language are required' });
+  }
+  
+  try {
+    const result = await getArticlesDirect({ productPath, country, language });
+    
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+    
+    if (result.noSellers) {
+      return res.json({ 
+        noSellers: true, 
+        productInfo: result.productInfo,
+        articles: []
+      });
+    }
+    
+    if (result.articles.length === 0) {
+      return res.status(204).json({ message: 'Produit non trouvé' });
+    }
+    
+    return res.json(result.articles);
+  } catch (err) {
+    console.error('❌ Direct search error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 SEARCH (with scrapper fallback)
+router.get('/', ensureAuth, validateArticleSearch, async (req, res) => {
+  const { category, language, country, serie } = req.query;
+
+  try {
+    const result = await getArticles({ category, language, country, serie });
+
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    // Product exists but no sellers
+    if (result.noSellers && result.productInfo) {
+      return res.json({ 
+        noSellers: true, 
+        productInfo: result.productInfo,
+        articles: []
+      });
+    }
+
+    // Product doesn't exist (empty array, noSellers is false)
+    if (result.articles.length === 0 && !result.noSellers) {
+      return res.status(204).json({ message: 'Aucun article trouvé' });
+    }
+
+    return res.json(result.articles);
+  } catch (err) {
+    console.error('❌ Erreur MongoDB :', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 // 🔹 UPDATE
-router.put('/:id', async (req, res) => {
+router.put('/:id', ensureAuth, validateObjectId, async (req, res) => {
   try {
     const article = await Article.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!article) return res.status(404).json({ error: 'Article not found' });
@@ -136,7 +109,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // 🔹 DELETE
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', ensureAuth, validateObjectId, async (req, res) => {
   try {
     const article = await Article.findByIdAndDelete(req.params.id);
     if (!article) return res.status(404).json({ error: 'Article not found' });

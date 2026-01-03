@@ -1,0 +1,86 @@
+// Scraped from Cardmarket on 2026-01-02
+// https://www.cardmarket.com/en/Pokemon/Products/Search
+
+const categories = [
+  { value: "51", text: "Singles", slug: "Singles" },
+  { value: "52", text: "Boosters", slug: "Boosters" },
+  { value: "53", text: "Booster Boxes", slug: "Booster-Boxes" },
+  { value: "1083", text: "Blisters", slug: "Blisters" },
+  { value: "54", text: "Theme Decks", slug: "Theme-Decks" },
+  { value: "1013", text: "Trainer Kits", slug: "Trainer-Kits" },
+  { value: "1014", text: "Tins", slug: "Tins" },
+  { value: "1015", text: "Box Sets", slug: "Box-Sets" },
+  { value: "1016", text: "Elite Trainer Boxes", slug: "Elite-Trainer-Boxes" },
+  { value: "1017", text: "Coins", slug: "Coins" },
+  { value: "1654", text: "Sets", slug: "Sets" },
+  { value: "1064", text: "Lots", slug: "Lots" },
+  { value: "12", text: "Sleeves", slug: "Sleeves" },
+  { value: "1082", text: "Grading", slug: "Grading" },
+  { value: "35", text: "Playmats", slug: "Playmats" },
+  { value: "15", text: "Deck Boxes", slug: "Deck-Boxes" },
+  { value: "1025", text: "Card Scanners", slug: "Card-Scanners" },
+  { value: "14", text: "Binders", slug: "Albums" },
+  { value: "40", text: "Storage", slug: "Storage" },
+  { value: "13", text: "Pocket Pages", slug: "Pocket-Pages" },
+  { value: "16", text: "Dice", slug: "Dice" },
+  { value: "44", text: "Books - Comics - Guides", slug: "Books-Comics-Guides" },
+  { value: "45", text: "Dividers", slug: "Dividers" },
+  { value: "1081", text: "Apparel", slug: "Apparel" },
+  { value: "46", text: "Memorabilia", slug: "Memorabilia" },
+  { value: "43", text: "Life Counter", slug: "Life-Counter" },
+  { value: "41", text: "Gaming Stones", slug: "Gaming-Stones" },
+  { value: "50", text: "Game Kits", slug: "Game-Kits" },
+  { value: "49", text: "Dice Bags", slug: "Dice-Bags" }
+];
+
+const languages = [
+  { value: "1", text: "English", code: "en" },
+  { value: "2", text: "French", code: "fr" },
+  { value: "3", text: "German", code: "de" },
+  { value: "4", text: "Spanish", code: "es" },
+  { value: "5", text: "Italian", code: "it" },
+  { value: "8", text: "Portuguese", code: "pt" },
+  { value: "9", text: "Japanese", code: "jp" },
+  { value: "10", text: "Chinese", code: "cn" },
+  { value: "11", text: "Korean", code: "kr" }
+];
+
+const countries = [
+  { value: "1", text: "Austria", code: "at" },
+  { value: "2", text: "Belgium", code: "be" },
+  { value: "3", text: "Bulgaria", code: "bg" },
+  { value: "33", text: "Canada", code: "ca" },
+  { value: "35", text: "Croatia", code: "hr" },
+  { value: "5", text: "Cyprus", code: "cy" },
+  { value: "6", text: "Czech Republic", code: "cz" },
+  { value: "8", text: "Denmark", code: "dk" },
+  { value: "9", text: "Estonia", code: "ee" },
+  { value: "11", text: "Finland", code: "fi" },
+  { value: "12", text: "France", code: "fr" },
+  { value: "7", text: "Germany", code: "de" },
+  { value: "14", text: "Greece", code: "gr" },
+  { value: "15", text: "Hungary", code: "hu" },
+  { value: "37", text: "Iceland", code: "is" },
+  { value: "16", text: "Ireland", code: "ie" },
+  { value: "17", text: "Italy", code: "it" },
+  { value: "36", text: "Japan", code: "jp" },
+  { value: "21", text: "Latvia", code: "lv" },
+  { value: "18", text: "Liechtenstein", code: "li" },
+  { value: "19", text: "Lithuania", code: "lt" },
+  { value: "20", text: "Luxembourg", code: "lu" },
+  { value: "22", text: "Malta", code: "mt" },
+  { value: "23", text: "Netherlands", code: "nl" },
+  { value: "24", text: "Norway", code: "no" },
+  { value: "25", text: "Poland", code: "pl" },
+  { value: "26", text: "Portugal", code: "pt" },
+  { value: "27", text: "Romania", code: "ro" },
+  { value: "29", text: "Singapore", code: "sg" },
+  { value: "31", text: "Slovakia", code: "sk" },
+  { value: "30", text: "Slovenia", code: "si" },
+  { value: "10", text: "Spain", code: "es" },
+  { value: "28", text: "Sweden", code: "se" },
+  { value: "4", text: "Switzerland", code: "ch" },
+  { value: "13", text: "United Kingdom", code: "uk" }
+];
+
+module.exports = { categories, languages, countries };
