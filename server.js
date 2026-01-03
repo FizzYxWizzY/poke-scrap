@@ -5,12 +5,97 @@ const passport = require('passport');
 const cron = require('node-cron');
 require('dotenv').config();
 
-const connectDB = require('./db/database');
 const ensureAuth = require('./middlewares/auth');
 const { checkAllWatchlists } = require('./services/priceChecker');
 const { verifyEmailConfig } = require('./services/emailService');
 const { updateOptionsFromCardmarket } = require('./services/optionsService');
 require('./auth/google');
+
+// Function to ensure MongoDB Docker container is running and accessible
+const ensureMongoDB = () => {
+  console.log('🔍 Ensuring MongoDB Docker container is running and accessible...');
+
+  return new Promise((resolve, reject) => {
+    const { spawn } = require('child_process');
+    const mongoose = require('mongoose');
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/poke-scrap';
+
+    // First, check if Docker container is running and start it if needed
+    const checkAndStartContainer = () => {
+      return new Promise((resolveContainer, rejectContainer) => {
+        console.log('🐳 Checking MongoDB Docker container status...');
+
+        // Create a script to check and start the container
+        const script = `
+#!/bin/bash
+# Check if MongoDB container is running
+if ! sudo -n docker ps --filter name=mongodb --format "{{.Names}}" | grep -q mongodb; then
+    echo "📦 MongoDB container not running. Starting it..."
+    if ! sudo -n docker start mongodb 2>/dev/null; then
+        echo "🔄 Failed to start existing container. Creating new MongoDB container..."
+        sudo -n docker run -d --name mongodb -p 27017:27017 mongo:latest
+        echo "⏳ Waiting for new container to initialize..."
+        sleep 5
+    fi
+fi
+echo "✅ Container check complete"
+`;
+
+        // Write and execute the script
+        const fs = require('fs');
+        const path = require('path');
+        const scriptPath = path.join(__dirname, 'check_mongo.sh');
+
+        fs.writeFileSync(scriptPath, script);
+        fs.chmodSync(scriptPath, '755');
+
+        const child = spawn('bash', [scriptPath], { stdio: 'inherit' });
+
+        child.on('close', (code) => {
+          fs.unlinkSync(scriptPath);
+          if (code === 0) {
+            resolveContainer();
+          } else {
+            rejectContainer(new Error('Failed to start MongoDB container'));
+          }
+        });
+
+        child.on('error', (error) => {
+          fs.unlinkSync(scriptPath);
+          rejectContainer(error);
+        });
+      });
+    };
+
+    // Then try to connect to MongoDB
+    const connectWithRetry = (retries = 30) => {
+      console.log(`⏳ Attempting to connect to MongoDB (attempts remaining: ${retries})...`);
+
+      mongoose.connect(mongoUri)
+        .then(() => {
+          console.log('✅ MongoDB connected successfully!');
+          resolve();
+        })
+        .catch((error) => {
+          console.log(`❌ MongoDB connection failed: ${error.message}`);
+          if (retries > 0) {
+            console.log('   Retrying in 2 seconds...');
+            setTimeout(() => connectWithRetry(retries - 1), 2000);
+          } else {
+            reject(new Error('Failed to connect to MongoDB after multiple attempts'));
+          }
+        });
+    };
+
+    // Start the process: check/start container, then connect
+    checkAndStartContainer()
+      .then(() => {
+        console.log('🔄 Container ready, attempting database connection...');
+        connectWithRetry();
+      })
+      .catch(reject);
+  });
+};
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -23,7 +108,14 @@ const recentRoutes = require('./routes/recent');
 const app = express();
 app.use(express.json());
 
-connectDB();
+// Ensure MongoDB is running before proceeding
+ensureMongoDB().then(() => {
+  console.log('🚀 Starting server...');
+  // Server startup code continues below
+}).catch((error) => {
+  console.error('Failed to ensure MongoDB:', error);
+  process.exit(1);
+});
 
 // Session (obligatoire pour Passport)
 app.use(session({
