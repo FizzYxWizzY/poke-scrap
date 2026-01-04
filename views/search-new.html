@@ -198,6 +198,12 @@
       background-repeat: no-repeat;
       background-position: right 12px center;
       padding-right: 36px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-wrap: break-word;
+      hyphens: auto;
     }
     .search-actions {
       display: flex;
@@ -493,7 +499,20 @@
     @media (max-width: 768px) {
       .header-content { flex-wrap: wrap; }
       .hero h1 { font-size: 1.8rem; }
-      .filters-grid { grid-template-columns: 1fr; }
+      .filters-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .filter-group select {
+        font-size: 16px; /* Prevent zoom on iOS */
+        max-width: 100%;
+        min-height: 44px; /* Better touch target */
+        padding: 12px 40px 12px 16px; /* More padding for touch */
+      }
+      .filter-group select option {
+        font-size: 16px; /* Ensure readable option text */
+        padding: 8px;
+      }
       .carousel-item { width: 120px; }
       .carousel-item img { height: 80px; }
     }
@@ -848,19 +867,64 @@
       try {
         const res = await fetch('/api/options');
         const { categories, expansions, languages, countries } = await res.json();
-        document.getElementById('category').innerHTML = '<option value="">-- Category --</option>' +
-          categories.map(c => '<option value="' + c.value + '">' + c.text + '</option>').join('');
-        document.getElementById('expansion').innerHTML = '<option value="">-- Expansion --</option>' +
-          expansions.map(e => '<option value="' + e.value + '">' + e.text + '</option>').join('');
-        document.getElementById('language').innerHTML = '<option value="">-- Language --</option>' +
-          languages.map(l => '<option value="' + l.text.toLowerCase() + '">' + l.text + '</option>').join('');
-        document.getElementById('country').innerHTML = '<option value="">-- Country --</option>' +
-          countries.map(c => '<option value="' + c.text.toLowerCase() + '">' + c.text + '</option>').join('');
+
+        // Store original data for resize handling
+        window.optionsData = { categories, expansions, languages, countries };
+
+        updateSelectOptions();
+
       } catch (err) {
         showMessage('Loading error: ' + err.message, 'error');
       }
     }
+
+    // Function to update select options based on screen size
+    function updateSelectOptions() {
+      if (!window.optionsData) return;
+
+      const { categories, expansions, languages, countries } = window.optionsData;
+      const isMobile = window.innerWidth <= 768;
+
+      // Helper function to truncate text for mobile
+      const truncateForMobile = (text, maxLength = isMobile ? 25 : 50) => {
+        if (isMobile && text.length > maxLength) {
+          return text.substring(0, maxLength - 3) + '...';
+        }
+        return text;
+      };
+
+      document.getElementById('category').innerHTML = '<option value="">-- Category --</option>' +
+        categories.map(c => '<option value="' + c.value + '" title="' + c.text + '">' + truncateForMobile(c.text) + '</option>').join('');
+      document.getElementById('expansion').innerHTML = '<option value="">-- Expansion --</option>' +
+        expansions.map(e => '<option value="' + e.value + '" title="' + e.text + '">' + truncateForMobile(e.text, isMobile ? 20 : 40) + '</option>').join('');
+      document.getElementById('language').innerHTML = '<option value="">-- Language --</option>' +
+        languages.map(l => '<option value="' + l.text.toLowerCase() + '" title="' + l.text + '">' + truncateForMobile(l.text) + '</option>').join('');
+      document.getElementById('country').innerHTML = '<option value="">-- Country --</option>' +
+        countries.map(c => '<option value="' + c.text.toLowerCase() + '" title="' + c.text + '">' + truncateForMobile(c.text) + '</option>').join('');
+    }
+
     loadOptions();
+
+    // Initial check for mobile truncation
+    setTimeout(() => {
+      updateSelectOptions();
+    }, 100);
+
+    // Re-truncate text on window resize (for device rotation)
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        updateSelectOptions(); // Update options with new truncation
+      }, 150); // Faster response
+    });
+
+    // Also listen for orientation change on mobile devices
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        updateSelectOptions(); // Immediate update on orientation change
+      }, 100);
+    });
 
     document.getElementById('search-products-btn').addEventListener('click', async () => {
       const categoryId = document.getElementById('category').value;
