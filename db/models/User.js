@@ -9,7 +9,9 @@ const userSchema = new mongoose.Schema({
 		type: String, 
 		enum: ['free', 'paid', 'betatester', 'admin'], 
 		default: 'free' 
-	}
+	},
+	favoriteCountry: { type: String, default: '' },
+	favoriteLanguage: { type: String, default: '' }
 });
 
 module.exports = mongoose.model('User', userSchema);

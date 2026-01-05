@@ -5,119 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poke'Scrap - Dashboard</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/styles.css?v=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-dark: #0f0f1a;
-      --bg-card: #1a1a2e;
-      --bg-card-hover: #252542;
-      --bg-input: #16162a;
-      --accent: #6c5ce7;
-      --accent-hover: #8b7cf7;
-      --accent-glow: rgba(108, 92, 231, 0.3);
-      --success: #00b894;
-      --warning: #fdcb6e;
-      --error: #e74c3c;
-      --text-primary: #ffffff;
-      --text-secondary: #a0a0b8;
-      --text-muted: #6c6c80;
-      --border: #2d2d44;
-      --border-light: #3d3d5c;
-      --gradient-1: linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%);
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-      --shadow-glow: 0 0 20px var(--accent-glow);
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-primary);
-      min-height: 100vh;
-      line-height: 1.5;
-    }
-    .header {
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-    .logo-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-sm);
-    }
-    .logo-text {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: var(--gradient-1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .nav-buttons {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-    .btn-primary {
-      background: var(--gradient-1);
-      color: white;
-      box-shadow: var(--shadow-sm);
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
-    }
-    .btn-secondary {
-      background: var(--bg-card-hover);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-    .btn-secondary:hover {
-      background: var(--border-light);
-      border-color: var(--accent);
-    }
-    .btn-danger {
-      background: transparent;
-      color: var(--error);
-      border: 1px solid var(--error);
-    }
-    .btn-danger:hover {
-      background: var(--error);
-      color: white;
-    }
 
     .main-container {
       max-width: 900px;
@@ -199,7 +89,10 @@
     .action-title {
       font-size: 1.1rem;
       font-weight: 600;
-      color: var(--text-primary);
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin-bottom: 8px;
     }
 
@@ -267,7 +160,10 @@
       border: 1px solid var(--border);
     }
     .section-title {
-      color: var(--accent);
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin-bottom: 24px;
       font-size: 1.5rem;
       font-weight: 600;
@@ -621,6 +517,116 @@
     .error p {
       margin-bottom: 8px;
     }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-glow);
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+    .modal-close:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+    .modal-body {
+      padding: 24px;
+    }
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding: 16px 24px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .settings-section h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .settings-desc {
+      margin: 0 0 20px 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .settings-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-group label {
+      font-weight: 500;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .form-group select {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
   </style>
 </head>
 <body>
@@ -632,9 +638,10 @@
         <span class="logo-text">Poke'Scrap</span>
       </a>
       <nav class="nav-buttons">
-        <a href="/api/scrapper" class="btn btn-secondary">🔍 Search</a>
+        <a href="/api/scrapper" class="btn btn-primary">🔍 Search</a>
         <a href="/api/watch" class="btn btn-primary">⭐ Watchlist</a>
-        <button onclick="logout()" class="btn btn-danger">Logout</button>
+        <button id="login-btn" class="btn btn-primary hidden" onclick="window.location.href='/auth/google'">Login</button>
+        <button id="logout-btn" class="btn btn-danger" onclick="logout()">Logout</button>
       </nav>
     </div>
   </header>
@@ -656,6 +663,11 @@
           <div class="action-title">My Watchlist</div>
           <div class="action-desc">Manage your price alerts</div>
         </a>
+        <button onclick="showSettings()" class="action-card">
+          <div class="action-icon">⚙️</div>
+          <div class="action-title">Settings</div>
+          <div class="action-desc">Customize your preferences</div>
+        </button>
         <button onclick="logout()" class="action-card">
           <div class="action-icon">🚪</div>
           <div class="action-title">Logout</div>
@@ -716,6 +728,42 @@
       </div>
     </div>
   </main>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⚙️ User Settings</h2>
+        <button onclick="closeSettings()" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <h3>Search Preferences</h3>
+          <p class="settings-desc">Set your default country and language for searches to save time.</p>
+          
+          <div class="settings-form">
+            <div class="form-group">
+              <label for="favorite-country">Favorite Seller Country</label>
+              <select id="favorite-country">
+                <option value="">Select a country...</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="favorite-language">Favorite Card Language</label>
+              <select id="favorite-language">
+                <option value="">Select a language...</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeSettings()" class="btn btn-secondary">Cancel</button>
+        <button onclick="saveSettings()" class="btn btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer">
     © <span id="current-year"></span> Poke'Scrap — <a href="mailto:pokescrap.project@gmail.com" style="color: var(--accent-hover);">Contact</a>
@@ -792,8 +840,113 @@
       })
       .catch(error => {
         console.error('Erreur lors du fetch :', error);
+        // If not authenticated, show login button and hide logout
+        document.getElementById('login-btn').classList.remove('hidden');
+        document.getElementById('logout-btn').classList.add('hidden');
         window.location.href = '/';
       });
+
+    // Check authentication status for navigation
+    async function checkAuthStatus() {
+      try {
+        const res = await fetch('/api/user', { credentials: 'same-origin' });
+        if (res.ok) {
+          // Logout button is already visible, login button stays hidden
+          document.getElementById('logout-btn').classList.remove('hidden');
+          document.getElementById('login-btn').classList.add('hidden');
+        } else {
+          document.getElementById('logout-btn').classList.add('hidden');
+          document.getElementById('login-btn').classList.remove('hidden');
+        }
+      } catch {
+        document.getElementById('logout-btn').classList.add('hidden');
+        document.getElementById('login-btn').classList.remove('hidden');
+      }
+    }
+    checkAuthStatus();
+
+    // Settings functions
+    async function showSettings() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.remove('hidden');
+      
+      // Load current preferences and options
+      try {
+        const [preferencesResponse, countriesResponse, languagesResponse] = await Promise.all([
+          fetch('/api/users/preferences', { credentials: 'same-origin' }),
+          fetch('/api/options/countries'),
+          fetch('/api/options/languages')
+        ]);
+        
+        const preferences = await preferencesResponse.json();
+        const countries = await countriesResponse.json();
+        const languages = await languagesResponse.json();
+        
+        // Populate country dropdown
+        const countrySelect = document.getElementById('favorite-country');
+        countrySelect.innerHTML = '<option value="">Select a country...</option>';
+        countries.forEach(country => {
+          const option = document.createElement('option');
+          option.value = country.text.toLowerCase();
+          option.textContent = country.text;
+          if (preferences.favoriteCountry === country.text.toLowerCase()) {
+            option.selected = true;
+          }
+          countrySelect.appendChild(option);
+        });
+        
+        // Populate language dropdown
+        const languageSelect = document.getElementById('favorite-language');
+        languageSelect.innerHTML = '<option value="">Select a language...</option>';
+        languages.forEach(language => {
+          const option = document.createElement('option');
+          option.value = language.text.toLowerCase();
+          option.textContent = language.text;
+          if (preferences.favoriteLanguage === language.text.toLowerCase()) {
+            option.selected = true;
+          }
+          languageSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        showMessage('Failed to load settings', 'error');
+      }
+    }
+    
+    function closeSettings() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.add('hidden');
+    }
+    
+    async function saveSettings() {
+      const favoriteCountry = document.getElementById('favorite-country').value;
+      const favoriteLanguage = document.getElementById('favorite-language').value;
+      
+      try {
+        const response = await fetch('/api/users/preferences', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            favoriteCountry,
+            favoriteLanguage
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to save settings');
+        }
+        
+        const result = await response.json();
+        showMessage('Settings saved successfully!', 'success');
+        closeSettings();
+      } catch (error) {
+        console.error('Error saving settings:', error);
+        showMessage('Failed to save settings', 'error');
+      }
+    }
 
     // Admin functions
     async function loadUsers() {

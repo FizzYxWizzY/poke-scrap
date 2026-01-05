@@ -5,119 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poke'Scrap - My Watchlist</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/styles.css?v=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-dark: #0f0f1a;
-      --bg-card: #1a1a2e;
-      --bg-card-hover: #252542;
-      --bg-input: #16162a;
-      --accent: #6c5ce7;
-      --accent-hover: #8b7cf7;
-      --accent-glow: rgba(108, 92, 231, 0.3);
-      --success: #00b894;
-      --warning: #fdcb6e;
-      --error: #e74c3c;
-      --text-primary: #ffffff;
-      --text-secondary: #a0a0b8;
-      --text-muted: #6c6c80;
-      --border: #2d2d44;
-      --border-light: #3d3d5c;
-      --gradient-1: linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%);
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-      --shadow-glow: 0 0 20px var(--accent-glow);
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-primary);
-      min-height: 100vh;
-      line-height: 1.5;
-    }
-    .header {
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-    .logo-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-sm);
-    }
-    .logo-text {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: var(--gradient-1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .nav-buttons {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-    .btn-primary {
-      background: var(--gradient-1);
-      color: white;
-      box-shadow: var(--shadow-sm);
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
-    }
-    .btn-secondary {
-      background: var(--bg-card-hover);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-    .btn-secondary:hover {
-      background: var(--border-light);
-      border-color: var(--accent);
-    }
-    .btn-danger {
-      background: transparent;
-      color: var(--error);
-      border: 1px solid var(--error);
-    }
-    .btn-danger:hover {
-      background: var(--error);
-      color: white;
-    }
     .btn-icon {
       background: transparent;
       color: var(--error);
@@ -306,6 +196,7 @@
       border: 1px solid var(--error);
     }
     .message.hidden { display: none; }
+    .hidden { display: none !important; }
 
     @media (max-width: 768px) {
       .header-content {
@@ -334,9 +225,10 @@
         <span class="logo-text">Poke'Scrap</span>
       </a>
       <nav class="nav-buttons">
-        <a href="/api/scrapper" class="btn btn-secondary">🔍 Search</a>
-        <a href="/dashboard" class="btn btn-secondary">🏠 Dashboard</a>
-        <button onclick="logout()" class="btn btn-danger">Logout</button>
+        <a href="/api/scrapper" class="btn btn-primary">🔍 Search</a>
+        <a href="/dashboard" class="btn btn-primary">🏠 Dashboard</a>
+        <button id="login-btn" class="btn btn-primary hidden" onclick="window.location.href='/auth/google'">Login</button>
+        <button id="logout-btn" class="btn btn-danger" onclick="logout()">Logout</button>
       </nav>
     </div>
   </header>
@@ -399,7 +291,8 @@
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
           'Accept': 'application/json'
-        }
+        },
+        credentials: 'same-origin'
       })
       .then(response => {
         if (response.ok) {
@@ -433,7 +326,7 @@
     async function fetchWatchlist() {
       try {
         // First get user info to check role
-        const userRes = await fetch('/api/user');
+        const userRes = await fetch('/api/user', { credentials: 'same-origin' });
         let userData = null;
         
         if (userRes.ok) {
@@ -442,7 +335,7 @@
           console.warn('Failed to fetch user data:', userRes.status);
         }
         
-        const res = await fetch('/api/watchlists');
+        const res = await fetch('/api/watchlists', { credentials: 'same-origin' });
         
         if (res.status === 401) {
           window.location.href = '/auth/google?returnTo=/api/watch';
@@ -518,7 +411,7 @@
 
     async function deleteWatchlist(id) {
       try {
-        const res = await fetch(`/api/watchlists/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/watchlists/${id}`, { method: 'DELETE', credentials: 'same-origin' });
 
         if (res.ok) {
           showMessage('✓ Alert deleted', 'success');
@@ -532,7 +425,33 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', fetchWatchlist);
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchWatchlist();
+      checkAuthStatus();
+    });
+
+    // Check authentication status for navigation
+    async function checkAuthStatus() {
+      try {
+        console.log('Checking auth status...');
+        const res = await fetch('/api/user', { credentials: 'same-origin' });
+        console.log('Auth check response:', res.status, res.ok);
+        if (res.ok) {
+          console.log('User is authenticated, keeping logout button visible');
+          // Logout button is already visible, login button stays hidden
+          document.getElementById('logout-btn').classList.remove('hidden');
+          document.getElementById('login-btn').classList.add('hidden');
+        } else {
+          console.log('User is not authenticated, showing login button and hiding logout');
+          document.getElementById('logout-btn').classList.add('hidden');
+          document.getElementById('login-btn').classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        document.getElementById('logout-btn').classList.add('hidden');
+        document.getElementById('login-btn').classList.remove('hidden');
+      }
+    }
   </script>
 </body>
 </html>

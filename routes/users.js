@@ -77,6 +77,67 @@ router.get('/stats', ensureRole('betatester'), async (req, res) => {
   }
 });
 
+// Get current user profile
+router.get('/me', ensureAuth, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  res.json(user);
+});
+
+// Get user preferences
+router.get('/preferences', ensureAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('favoriteCountry favoriteLanguage');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({
+      favoriteCountry: user.favoriteCountry || '',
+      favoriteLanguage: user.favoriteLanguage || ''
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update user preferences
+router.put('/preferences', ensureAuth, async (req, res) => {
+  try {
+    const { favoriteCountry, favoriteLanguage } = req.body;
+    
+    // Validate inputs if provided
+    if (favoriteCountry !== undefined && typeof favoriteCountry !== 'string') {
+      return res.status(400).json({ error: 'favoriteCountry must be a string' });
+    }
+    if (favoriteLanguage !== undefined && typeof favoriteLanguage !== 'string') {
+      return res.status(400).json({ error: 'favoriteLanguage must be a string' });
+    }
+
+    const updateData = {};
+    if (favoriteCountry !== undefined) updateData.favoriteCountry = favoriteCountry;
+    if (favoriteLanguage !== undefined) updateData.favoriteLanguage = favoriteLanguage;
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('favoriteCountry favoriteLanguage');
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      message: 'Preferences updated successfully',
+      preferences: {
+        favoriteCountry: user.favoriteCountry || '',
+        favoriteLanguage: user.favoriteLanguage || ''
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Read one - AUTHENTICATED USERS
 router.get('/:id', ensureAuth, async (req, res) => {
   console.log('User by ID route called with id:', req.params.id);
@@ -87,50 +148,6 @@ router.get('/:id', ensureAuth, async (req, res) => {
   }
   
   const user = await User.findById(req.params.id);
-  res.json(user);
-});
-
-// Update - ADMIN ONLY
-router.put('/:id', ensureAdmin, async (req, res) => {
-  const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(user);
-});
-
-// Delete - ADMIN ONLY
-router.delete('/:id', ensureAdmin, async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
-  res.sendStatus(204);
-});
-
-// Update user role - ADMIN ONLY
-router.put('/:id/role', ensureAdmin, async (req, res) => {
-  const { role } = req.body;
-  const validRoles = ['free', 'paid', 'betatester', 'admin'];
-  
-  if (!validRoles.includes(role)) {
-    return res.status(400).json({ error: 'Invalid role. Must be one of: free, paid, betatester, admin' });
-  }
-  
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id, 
-      { role }, 
-      { new: true }
-    );
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json({ message: `User role updated to ${role}`, user });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Get current user profile
-router.get('/me', ensureAuth, async (req, res) => {
-  const user = await User.findById(req.user._id);
   res.json(user);
 });
 

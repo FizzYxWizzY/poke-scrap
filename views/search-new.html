@@ -5,118 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poke'Scrap - Pokémon Search</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/css/styles.css?v=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-dark: #0f0f1a;
-      --bg-card: #1a1a2e;
-      --bg-card-hover: #252542;
-      --bg-input: #16162a;
-      --accent: #6c5ce7;
-      --accent-hover: #8b7cf7;
-      --accent-glow: rgba(108, 92, 231, 0.3);
-      --success: #00b894;
-      --warning: #fdcb6e;
-      --error: #e74c3c;
-      --text-primary: #ffffff;
-      --text-secondary: #a0a0b8;
-      --text-muted: #6c6c80;
-      --border: #2d2d44;
-      --border-light: #3d3d5c;
-      --gradient-1: linear-gradient(135deg, #6c5ce7 0%, #a855f7 100%);
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-      --shadow-glow: 0 0 20px var(--accent-glow);
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-primary);
-      min-height: 100vh;
-      line-height: 1.5;
-    }
-    .header {
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-    .logo-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-sm);
-    }
-    .logo-text {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: var(--gradient-1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .nav-buttons {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-    .btn-primary {
-      background: var(--gradient-1);
-      color: white;
-      box-shadow: var(--shadow-sm);
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
-    }
-    .btn-secondary {
-      background: var(--bg-input);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-    .btn-secondary:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--accent);
-    }
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-secondary);
-    }
-    .btn-ghost:hover {
-      color: var(--text-primary);
-      background: var(--bg-input);
-    }
     .main-content {
       max-width: 1200px;
       margin: 0 auto;
@@ -155,6 +46,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      color: var(--text-secondary);
     }
     .search-card h2::before { content: "🔍"; }
     .filters-grid {
@@ -258,6 +150,10 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .step-badge {
       display: inline-flex;
@@ -444,10 +340,10 @@
     .recent-title {
       font-size: 1rem;
       font-weight: 600;
-      color: var(--text-secondary);
       display: flex;
       align-items: center;
       gap: 8px;
+      color: var(--text-secondary);
     }
     .recent-title::before { content: "🕐"; }
     .carousel-container {
@@ -526,9 +422,10 @@
         <span class="logo-text">Poke'Scrap</span>
       </a>
       <nav class="nav-buttons">
-        <button class="btn btn-secondary" onclick="goToWatchlist()">📋 My Watchlist</button>
+        <a href="/dashboard" id="dashboard-btn" class="btn btn-primary hidden">🏠 Dashboard</a>
+        <button class="btn btn-primary" id="watchlist-btn" onclick="goToWatchlist()">⭐ My Watchlist</button>
         <button id="login-btn" class="btn btn-primary hidden" onclick="window.location.href='/auth/google'">Login</button>
-        <button id="logout-btn" class="btn btn-ghost hidden" onclick="logout()">Logout</button>
+        <button id="logout-btn" class="btn btn-danger hidden" onclick="logout()">Logout</button>
       </nav>
     </div>
   </header>
@@ -809,17 +706,21 @@
 
     async function checkAuthStatus() {
       try {
-        const res = await fetch('/api/user');
+        const res = await fetch('/api/user', { credentials: 'same-origin' });
         if (res.ok) {
           isLoggedIn = true;
           document.getElementById('logout-btn').classList.remove('hidden');
           document.getElementById('login-btn').classList.add('hidden');
+          document.getElementById('dashboard-btn').classList.remove('hidden');
+          document.getElementById('watchlist-btn').classList.remove('hidden');
           document.getElementById('watchlist-form').classList.remove('hidden');
           document.getElementById('login-prompt').classList.add('hidden');
         } else {
           isLoggedIn = false;
           document.getElementById('logout-btn').classList.add('hidden');
           document.getElementById('login-btn').classList.remove('hidden');
+          document.getElementById('dashboard-btn').classList.add('hidden');
+          document.getElementById('watchlist-btn').classList.add('hidden');
           document.getElementById('watchlist-form').classList.add('hidden');
           document.getElementById('login-prompt').classList.remove('hidden');
         }
@@ -827,6 +728,8 @@
         isLoggedIn = false;
         document.getElementById('logout-btn').classList.add('hidden');
         document.getElementById('login-btn').classList.remove('hidden');
+        document.getElementById('dashboard-btn').classList.add('hidden');
+        document.getElementById('watchlist-btn').classList.add('hidden');
         document.getElementById('watchlist-form').classList.add('hidden');
         document.getElementById('login-prompt').classList.remove('hidden');
       }
@@ -879,11 +782,22 @@
     }
 
     // Function to update select options based on screen size
-    function updateSelectOptions() {
+    async function updateSelectOptions() {
       if (!window.optionsData) return;
 
       const { categories, expansions, languages, countries } = window.optionsData;
       const isMobile = window.innerWidth <= 768;
+
+      // Load user preferences
+      let userPreferences = { favoriteCountry: '', favoriteLanguage: '' };
+      try {
+        const response = await fetch('/api/users/preferences');
+        if (response.ok) {
+          userPreferences = await response.json();
+        }
+      } catch (error) {
+        console.log('Could not load user preferences, using defaults');
+      }
 
       // Helper function to truncate text for mobile
       const truncateForMobile = (text, maxLength = isMobile ? 25 : 50) => {
@@ -897,10 +811,22 @@
         categories.map(c => '<option value="' + c.value + '" title="' + c.text + '">' + truncateForMobile(c.text) + '</option>').join('');
       document.getElementById('expansion').innerHTML = '<option value="">-- Expansion --</option>' +
         expansions.map(e => '<option value="' + e.value + '" title="' + e.text + '">' + truncateForMobile(e.text, isMobile ? 20 : 40) + '</option>').join('');
+      
+      // Set language options with user preference
       document.getElementById('language').innerHTML = '<option value="">-- Language --</option>' +
-        languages.map(l => '<option value="' + l.text.toLowerCase() + '" title="' + l.text + '">' + truncateForMobile(l.text) + '</option>').join('');
+        languages.map(l => {
+          const value = l.text.toLowerCase();
+          const selected = userPreferences.favoriteLanguage === value ? ' selected' : '';
+          return '<option value="' + value + '" title="' + l.text + '"' + selected + '>' + truncateForMobile(l.text) + '</option>';
+        }).join('');
+      
+      // Set country options with user preference
       document.getElementById('country').innerHTML = '<option value="">-- Country --</option>' +
-        countries.map(c => '<option value="' + c.text.toLowerCase() + '" title="' + c.text + '">' + truncateForMobile(c.text) + '</option>').join('');
+        countries.map(c => {
+          const value = c.text.toLowerCase();
+          const selected = userPreferences.favoriteCountry === value ? ' selected' : '';
+          return '<option value="' + value + '" title="' + c.text + '"' + selected + '>' + truncateForMobile(c.text) + '</option>';
+        }).join('');
     }
 
     loadOptions();
