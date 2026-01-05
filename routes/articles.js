@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Article = require('../db/models/Article');
-const ensureAuth = require('../middlewares/auth');
+const { ensureAuth } = require('../middlewares/auth');
 const { validateArticleSearch, validateObjectId } = require('../middlewares/validators');
 const { getArticles, preSearch, getArticlesDirect } = require('../services/articleService');
 const { categories, languages, countries } = require('../data/cardmarket-data');

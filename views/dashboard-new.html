@@ -257,6 +257,370 @@
       border: 1px solid var(--error);
     }
     .message.hidden { display: none; }
+
+    /* Admin Section Styles */
+    .admin-section {
+      margin-top: 32px;
+      padding: 24px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+    }
+    .section-title {
+      color: var(--accent);
+      margin-bottom: 24px;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .admin-card {
+      background: var(--bg-card-hover);
+      padding: 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      transition: all 0.2s ease;
+    }
+    .admin-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent);
+    }
+    .admin-card h3 {
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+    }
+    .admin-card p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+    .users-table {
+      margin-top: 24px;
+    }
+    .users-table h3 {
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .mobile-user-cards {
+      display: none;
+      gap: 16px;
+    }
+    .mobile-user-cards.show {
+      display: flex;
+      flex-direction: column;
+    }
+    .user-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .user-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-card-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .user-card-info h4 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+    }
+    .user-card-info p {
+      margin: 4px 0 0 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .user-card-role {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+    .user-card-role.free {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+    }
+    .user-card-role.paid {
+      background: var(--success);
+      color: white;
+    }
+    .user-card-role.betatester {
+      background: var(--warning);
+      color: white;
+    }
+    .user-card-role.admin {
+      background: var(--error);
+      color: white;
+    }
+    .user-card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .user-card-actions .btn {
+      flex: 1;
+      min-width: 80px;
+    }
+
+    .admin-protected {
+      color: var(--text-secondary);
+      font-style: italic;
+      font-size: 0.9rem;
+      padding: 8px;
+    }
+
+    /* Mobile responsiveness for toggle button */
+    @media (min-width: 769px) {
+      #toggle-view-btn {
+        display: none !important;
+      }
+    }
+    .table-container {
+      background: var(--bg-card-hover);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .users-table table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px; /* Prevent table from getting too narrow */
+    }
+    .users-table th,
+    .users-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .users-table th {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+    .users-table td {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .users-table td:nth-child(2) { /* Email column */
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .users-table tr:hover {
+      background: var(--bg-card);
+    }
+
+    /* Mobile responsive styles */
+    @media (max-width: 768px) {
+      .users-table th,
+      .users-table td {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+      
+      .users-table td:nth-child(2) { /* Email column */
+        max-width: 120px;
+      }
+      
+      .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 4px !important;
+        min-width: 80px;
+      }
+      
+      .btn-role {
+        padding: 6px 8px !important;
+        font-size: 0.7rem !important;
+        min-width: 60px;
+      }
+    }
+
+    .admin-protected {
+      color: var(--text-secondary);
+      font-style: italic;
+      font-size: 0.9rem;
+      padding: 8px;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      .users-table th:not(:first-child):not(:last-child),
+      .users-table td:not(:first-child):not(:last-child) {
+        display: none;
+      }
+      
+      .users-table th:first-child,
+      .users-table td:first-child {
+        padding-left: 12px;
+      }
+      
+      .users-table th:last-child,
+      .users-table td:last-child {
+        padding-right: 12px;
+      }
+      
+      /* Alternative card layout for very small screens */
+      .mobile-user-cards {
+        display: none;
+      }
+      
+      .mobile-user-cards.show {
+        display: block;
+      }
+      
+      .user-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 1px solid var(--border-light);
+      }
+      
+      .user-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      
+      .user-name {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      
+      .user-email {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+      }
+    }
+    .role-badge {
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .role-badge.admin {
+      background: rgba(108, 92, 231, 0.2);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+    .role-badge.paid {
+      background: rgba(0, 184, 148, 0.2);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+    .role-badge.betatester {
+      background: rgba(253, 203, 110, 0.2);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+    .role-badge.free {
+      background: rgba(160, 160, 184, 0.2);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      min-width: 200px;
+    }
+    .btn-role {
+      padding: 6px 12px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-role.paid { background: var(--success); color: white; }
+    .btn-role.betatester { background: var(--warning); color: var(--bg-dark); }
+    .btn-role.free { background: var(--text-muted); color: white; }
+    .btn-role:hover { opacity: 0.8; }
+    .btn-role:disabled { opacity: 0.5; cursor: not-allowed; }
+    .hidden { display: none !important; }
+
+    /* Stats Section Styles */
+    .stats-section {
+      margin-top: 24px;
+      padding: 20px;
+      background: var(--bg-card-hover);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
+    .stats-section h3 {
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+    }
+    .stats-content {
+      min-height: 100px;
+    }
+    .stats-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .stats-footer small {
+      color: var(--text-muted);
+    }
+    .btn-refresh {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-refresh:hover {
+      background: var(--accent-hover);
+    }
+    .loading, .error {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+    .error {
+      color: var(--error);
+    }
+    .error p {
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
@@ -297,6 +661,58 @@
           <div class="action-title">Logout</div>
           <div class="action-desc">Sign out of your account</div>
         </button>
+      </div>
+    </div>
+
+    <!-- Admin Section - Only visible to admins -->
+    <div id="admin-section" class="admin-section hidden">
+      <h2 class="section-title">👑 Admin & Beta Panel</h2>
+      
+      <div class="admin-grid">
+        <div id="user-management-card" class="admin-card">
+          <h3>User Management</h3>
+          <p>Manage user accounts and roles</p>
+          <button onclick="loadUsers()" class="btn btn-primary">Load Users</button>
+        </div>
+        
+        <div id="stats-card" class="admin-card">
+          <h3>System Stats</h3>
+          <p>View system statistics</p>
+          <button onclick="toggleStats()" class="btn btn-secondary">Toggle Stats</button>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div id="stats-section" class="stats-section hidden">
+        <h3>📊 System Statistics</h3>
+        <div id="stats-content" class="stats-content">
+          <div class="loading">Loading statistics...</div>
+        </div>
+      </div>
+
+      <div id="users-table" class="users-table hidden">
+        <div class="table-header">
+          <h3>All Users</h3>
+          <button id="toggle-view-btn" class="btn btn-secondary" onclick="toggleUserView()" style="display: none;">📱 Cards</button>
+        </div>
+        <div class="table-container">
+          <table id="users-list">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <!-- Users will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+        <div id="mobile-user-cards" class="mobile-user-cards">
+          <!-- Mobile cards will be loaded here -->
+        </div>
       </div>
     </div>
   </main>
@@ -363,11 +779,210 @@
       .then(data => {
         document.getElementById('user-name').textContent = data.name;
         document.getElementById('user-avatar').src = data.picture;
+        
+        // Check user role and show appropriate admin features
+        if (data.role === 'admin' || data.role === 'betatester') {
+          document.getElementById('admin-section').classList.remove('hidden');
+          
+          // Hide user management for betatesters
+          if (data.role === 'betatester') {
+            document.getElementById('user-management-card').style.display = 'none';
+          }
+        }
       })
       .catch(error => {
         console.error('Erreur lors du fetch :', error);
         window.location.href = '/';
       });
+
+    // Admin functions
+    async function loadUsers() {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error('Failed to load users');
+        }
+        const users = await response.json();
+        displayUsers(users);
+        createMobileCards(users);
+        document.getElementById('users-table').classList.remove('hidden');
+        document.getElementById('toggle-view-btn').style.display = 'block';
+        showMessage('Users loaded successfully!', 'success');
+      } catch (error) {
+        console.error('Error loading users:', error);
+        showMessage('Failed to load users', 'error');
+      }
+    }
+
+    function displayUsers(users) {
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = '';
+
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.userName}</td>
+          <td>${user.userEmail}</td>
+          <td><span class="role-badge ${user.role}">${user.role}</span></td>
+          <td class="action-buttons">
+            ${user.role === 'admin' ? '<span class="admin-protected">Protected</span>' :
+              `${user.role !== 'free' ? `<button class="btn-role free" onclick="changeUserRole('${user._id}', 'free')">Free</button>` : ''}
+               ${user.role !== 'paid' ? `<button class="btn-role paid" onclick="changeUserRole('${user._id}', 'paid')">Paid</button>` : ''}
+               ${user.role !== 'betatester' ? `<button class="btn-role betatester" onclick="changeUserRole('${user._id}', 'betatester')">Beta</button>` : ''}`
+            }
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function changeUserRole(userId, newRole) {
+      try {
+        const response = await fetch(`/api/users/${userId}/role`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ role: newRole })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update user role');
+        }
+
+        const result = await response.json();
+        showMessage(result.message, 'success');
+        
+        // Reload users to show updated roles
+        loadUsers();
+      } catch (error) {
+        console.error('Error updating user role:', error);
+        showMessage('Failed to update user role', 'error');
+      }
+    }
+
+    function toggleStats() {
+      const statsSection = document.getElementById('stats-section');
+      const isHidden = statsSection.classList.contains('hidden');
+      
+      if (isHidden) {
+        statsSection.classList.remove('hidden');
+        loadStats();
+      } else {
+        statsSection.classList.add('hidden');
+      }
+    }
+
+    async function loadStats() {
+      const statsContent = document.getElementById('stats-content');
+      statsContent.innerHTML = '<div class="loading">Loading statistics...</div>';
+      
+      try {
+        const response = await fetch('/api/users/stats');
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        const stats = await response.json();
+        displayStats(stats);
+      } catch (error) {
+        console.error('Error loading stats:', error);
+        statsContent.innerHTML = `
+          <div class="error">
+            <p>❌ Failed to load statistics</p>
+            <p>Error: ${error.message}</p>
+            <button onclick="loadStats()" class="btn btn-secondary">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    function displayStats(stats) {
+      const content = document.getElementById('stats-content');
+      content.innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h4>👥 Users</h4>
+            <div class="stat-number">${stats.users.total}</div>
+            <div class="stat-breakdown">
+              ${Object.entries(stats.users.byRole).map(([role, count]) => 
+                `<span class="role-stat ${role}">${count} ${role}</span>`
+              ).join('')}
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <h4>⭐ Watchlists</h4>
+            <div class="stat-number">${stats.watchlists.total}</div>
+            <div class="stat-desc">Active price alerts</div>
+          </div>
+          
+          <div class="stat-card">
+            <h4>📦 Articles</h4>
+            <div class="stat-number">${stats.articles.total}</div>
+            <div class="stat-desc">Tracked products</div>
+          </div>
+          
+          <div class="stat-card">
+            <h4>🔍 Recent Activity</h4>
+            <div class="stat-number">${stats.activity.recentSearches}</div>
+            <div class="stat-desc">Searches in last 24h</div>
+          </div>
+        </div>
+        
+        <div class="stats-footer">
+          <small>Last updated: ${new Date(stats.timestamp).toLocaleString()}</small>
+          <button onclick="loadStats()" class="btn-refresh">🔄 Refresh</button>
+        </div>
+      `;
+    }
+
+    function toggleUserView() {
+      const tableContainer = document.querySelector('.table-container');
+      const mobileCards = document.getElementById('mobile-user-cards');
+      const toggleBtn = document.getElementById('toggle-view-btn');
+      
+      if (tableContainer.style.display === 'none') {
+        // Switch to table view
+        tableContainer.style.display = 'block';
+        mobileCards.classList.remove('show');
+        toggleBtn.textContent = '📱 Cards';
+      } else {
+        // Switch to card view
+        tableContainer.style.display = 'none';
+        mobileCards.classList.add('show');
+        toggleBtn.textContent = '📊 Table';
+      }
+    }
+
+    function createMobileCards(users) {
+      const mobileCards = document.getElementById('mobile-user-cards');
+      mobileCards.innerHTML = '';
+      
+      users.forEach(user => {
+        const card = document.createElement('div');
+        card.className = 'user-card';
+        
+        card.innerHTML = `
+          <div class="user-card-header">
+            <img src="${user.userPicture || '/images/default-avatar.png'}" alt="${user.userName}" class="user-card-avatar">
+            <div class="user-card-info">
+              <h4>${user.userName}</h4>
+              <p>${user.userEmail}</p>
+            </div>
+          </div>
+          <span class="user-card-role ${user.role}">${user.role}</span>
+          <div class="user-card-actions">
+            ${user.role === 'admin' ? '<span class="admin-protected">Protected</span>' :
+              `${user.role !== 'free' ? `<button class="btn-role free" onclick="changeUserRole('${user._id}', 'free')">Free</button>` : ''}
+               ${user.role !== 'paid' ? `<button class="btn-role paid" onclick="changeUserRole('${user._id}', 'paid')">Paid</button>` : ''}
+               ${user.role !== 'betatester' ? `<button class="btn-role betatester" onclick="changeUserRole('${user._id}', 'betatester')">Beta</button>` : ''}`
+            }
+          </div>
+        `;
+        
+        mobileCards.appendChild(card);
+      });
+    }
   </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ const passport = require('passport');
 const cron = require('node-cron');
 require('dotenv').config();
 
-const ensureAuth = require('./middlewares/auth');
+const { ensureAuth } = require('./middlewares/auth');
 const { checkAllWatchlists } = require('./services/priceChecker');
 const { verifyEmailConfig } = require('./services/emailService');
 const { updateOptionsFromCardmarket } = require('./services/optionsService');
@@ -148,7 +148,8 @@ app.get('/api/user', ensureAuth, (req, res) => {
 		googleId: req.user.googleId,
 		name: req.user.userName,
 		picture: req.user.userPicture,
-		email: req.user.userEmail
+		email: req.user.userEmail,
+		role: req.user.role
 	});
 });
 

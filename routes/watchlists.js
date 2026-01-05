@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Watchlist = require('../db/models/Watchlist');
-const ensureAuth = require('../middlewares/auth');
+const { ensureAuth } = require('../middlewares/auth');
 const { validateWatchlistCreate, validateObjectId } = require('../middlewares/validators');
 
 // 🔹 CREATE (ajouter un article à une watchlist)
@@ -10,6 +10,16 @@ router.post('/', ensureAuth, validateWatchlistCreate, async (req, res) => {
   const userEmail = req.session.userEmail;
 
   try {
+    // Check watchlist limit for free users
+    if (req.user.role === 'free') {
+      const currentWatchlistCount = await Watchlist.countDocuments({ userEmail: userEmail });
+      if (currentWatchlistCount >= 10) {
+        return res.status(400).json({ 
+          error: 'Free users are limited to 10 watchlist items. Upgrade to Premium for unlimited watchlist items.' 
+        });
+      }
+    }
+
     const watchlist = await Watchlist.create({
       userEmail: userEmail,
       articleName: serie,

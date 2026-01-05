@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ensureAuth = require('../middlewares/auth');
+const { ensureAuth, ensureAdmin } = require('../middlewares/auth');
 const { 
   getCategories, 
   getExpansions, 
@@ -51,8 +51,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 🔹 POST force refresh of categories/expansions from Cardmarket - PROTECTED
-router.post('/refresh', ensureAuth, async (req, res) => {
+// 🔹 POST force refresh of categories/expansions from Cardmarket - ADMIN ONLY
+router.post('/refresh', ensureAdmin, async (req, res) => {
   try {
     const result = await updateOptionsFromCardmarket();
     if (result.success) {
