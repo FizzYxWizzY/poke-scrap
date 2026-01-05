@@ -820,18 +820,56 @@
 
       users.forEach(user => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${user.userName}</td>
-          <td>${user.userEmail}</td>
-          <td><span class="role-badge ${user.role}">${user.role}</span></td>
-          <td class="action-buttons">
-            ${user.role === 'admin' ? '<span class="admin-protected">Protected</span>' :
-              `${user.role !== 'free' ? `<button class="btn-role free" onclick="changeUserRole('${user._id}', 'free')">Free</button>` : ''}
-               ${user.role !== 'paid' ? `<button class="btn-role paid" onclick="changeUserRole('${user._id}', 'paid')">Paid</button>` : ''}
-               ${user.role !== 'betatester' ? `<button class="btn-role betatester" onclick="changeUserRole('${user._id}', 'betatester')">Beta</button>` : ''}`
-            }
-          </td>
-        `;
+        
+        // Create cells with proper text content to prevent XSS
+        const nameCell = document.createElement('td');
+        nameCell.textContent = user.userName;
+        row.appendChild(nameCell);
+        
+        const emailCell = document.createElement('td');
+        emailCell.textContent = user.userEmail;
+        row.appendChild(emailCell);
+        
+        const roleCell = document.createElement('td');
+        const roleSpan = document.createElement('span');
+        roleSpan.className = `role-badge ${user.role}`;
+        roleSpan.textContent = user.role;
+        roleCell.appendChild(roleSpan);
+        row.appendChild(roleCell);
+        
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'action-buttons';
+        
+        if (user.role === 'admin') {
+          const protectedSpan = document.createElement('span');
+          protectedSpan.className = 'admin-protected';
+          protectedSpan.textContent = 'Protected';
+          actionsCell.appendChild(protectedSpan);
+        } else {
+          if (user.role !== 'free') {
+            const freeBtn = document.createElement('button');
+            freeBtn.className = 'btn-role free';
+            freeBtn.textContent = 'Free';
+            freeBtn.onclick = () => changeUserRole(user._id, 'free');
+            actionsCell.appendChild(freeBtn);
+          }
+          if (user.role !== 'paid') {
+            const paidBtn = document.createElement('button');
+            paidBtn.className = 'btn-role paid';
+            paidBtn.textContent = 'Paid';
+            paidBtn.onclick = () => changeUserRole(user._id, 'paid');
+            actionsCell.appendChild(paidBtn);
+          }
+          if (user.role !== 'betatester') {
+            const betaBtn = document.createElement('button');
+            betaBtn.className = 'btn-role betatester';
+            betaBtn.textContent = 'Beta';
+            betaBtn.onclick = () => changeUserRole(user._id, 'betatester');
+            actionsCell.appendChild(betaBtn);
+          }
+        }
+        
+        row.appendChild(actionsCell);
         tbody.appendChild(row);
       });
     }
@@ -962,24 +1000,70 @@
         const card = document.createElement('div');
         card.className = 'user-card';
         
-        card.innerHTML = `
-          <div class="user-card-header">
-            <img src="${user.userPicture || '/images/default-avatar.png'}" alt="${user.userName}" class="user-card-avatar">
-            <div class="user-card-info">
-              <h4>${user.userName}</h4>
-              <p>${user.userEmail}</p>
-            </div>
-          </div>
-          <span class="user-card-role ${user.role}">${user.role}</span>
-          <div class="user-card-actions">
-            ${user.role === 'admin' ? '<span class="admin-protected">Protected</span>' :
-              `${user.role !== 'free' ? `<button class="btn-role free" onclick="changeUserRole('${user._id}', 'free')">Free</button>` : ''}
-               ${user.role !== 'paid' ? `<button class="btn-role paid" onclick="changeUserRole('${user._id}', 'paid')">Paid</button>` : ''}
-               ${user.role !== 'betatester' ? `<button class="btn-role betatester" onclick="changeUserRole('${user._id}', 'betatester')">Beta</button>` : ''}`
-            }
-          </div>
-        `;
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'user-card-header';
         
+        const avatar = document.createElement('img');
+        avatar.src = user.userPicture || '/images/default-avatar.png';
+        avatar.alt = user.userName;
+        avatar.className = 'user-card-avatar';
+        header.appendChild(avatar);
+        
+        const info = document.createElement('div');
+        info.className = 'user-card-info';
+        
+        const name = document.createElement('h4');
+        name.textContent = user.userName;
+        info.appendChild(name);
+        
+        const email = document.createElement('p');
+        email.textContent = user.userEmail;
+        info.appendChild(email);
+        
+        header.appendChild(info);
+        card.appendChild(header);
+        
+        // Create role badge
+        const roleBadge = document.createElement('span');
+        roleBadge.className = `user-card-role ${user.role}`;
+        roleBadge.textContent = user.role;
+        card.appendChild(roleBadge);
+        
+        // Create actions
+        const actions = document.createElement('div');
+        actions.className = 'user-card-actions';
+        
+        if (user.role === 'admin') {
+          const protectedSpan = document.createElement('span');
+          protectedSpan.className = 'admin-protected';
+          protectedSpan.textContent = 'Protected';
+          actions.appendChild(protectedSpan);
+        } else {
+          if (user.role !== 'free') {
+            const freeBtn = document.createElement('button');
+            freeBtn.className = 'btn-role free';
+            freeBtn.textContent = 'Free';
+            freeBtn.onclick = () => changeUserRole(user._id, 'free');
+            actions.appendChild(freeBtn);
+          }
+          if (user.role !== 'paid') {
+            const paidBtn = document.createElement('button');
+            paidBtn.className = 'btn-role paid';
+            paidBtn.textContent = 'Paid';
+            paidBtn.onclick = () => changeUserRole(user._id, 'paid');
+            actions.appendChild(paidBtn);
+          }
+          if (user.role !== 'betatester') {
+            const betaBtn = document.createElement('button');
+            betaBtn.className = 'btn-role betatester';
+            betaBtn.textContent = 'Beta';
+            betaBtn.onclick = () => changeUserRole(user._id, 'betatester');
+            actions.appendChild(betaBtn);
+          }
+        }
+        
+        card.appendChild(actions);
         mobileCards.appendChild(card);
       });
     }

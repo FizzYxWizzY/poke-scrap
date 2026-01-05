@@ -7,7 +7,7 @@ const { validateWatchlistCreate, validateObjectId } = require('../middlewares/va
 // 🔹 CREATE (ajouter un article à une watchlist)
 router.post('/', ensureAuth, validateWatchlistCreate, async (req, res) => {
   const { category, language, country, serie, targetPrice, articleImage, productPath } = req.body;
-  const userEmail = req.session.userEmail;
+  const userEmail = req.user.userEmail;
 
   try {
     // Check watchlist limit for free users
@@ -45,7 +45,7 @@ router.post('/', ensureAuth, validateWatchlistCreate, async (req, res) => {
 // 🔹 READ ALL pour le user connecté
 router.get('/', ensureAuth, async (req, res) => {
   try {
-    const watchlists = await Watchlist.find({ userEmail: req.session.userEmail });
+    const watchlists = await Watchlist.find({ userEmail: req.user.userEmail });
     return res.json(watchlists);
   } catch (err) {
     console.error(err);
@@ -57,7 +57,7 @@ router.get('/', ensureAuth, async (req, res) => {
 router.put('/:id', ensureAuth, validateObjectId, async (req, res) => {
   try {
     const watchlist = await Watchlist.findOneAndUpdate(
-      { _id: req.params.id, userEmail: req.session.userEmail },
+      { _id: req.params.id, userEmail: req.user.userEmail },
       req.body,
       { new: true }
     );
@@ -73,7 +73,7 @@ router.delete('/:id', ensureAuth, validateObjectId, async (req, res) => {
   try {
     const deleted = await Watchlist.findOneAndDelete({
       _id: req.params.id,
-      userEmail: req.session.userEmail
+      userEmail: req.user.userEmail
     });
 
     if (!deleted) {

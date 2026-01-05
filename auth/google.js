@@ -17,7 +17,7 @@ passport.use(new GoogleStrategy({
 	const email = prof.email;
 	const picture = prof.picture;
 	const existingUser = await User.findOneAndUpdate(
-		{ googleId: profile.id },
+		{ googleId: googleId },
 		{
 			userName: displayName,
 			userEmail: email,
