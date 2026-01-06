@@ -105,6 +105,7 @@ const articleRoutes = require('./routes/articles');
 const watchlistRoutes = require('./routes/watchlists');
 const optionsRoutes = require('./routes/options');
 const recentRoutes = require('./routes/recent');
+const contactRoutes = require('./routes/contact');
 const app = express();
 app.use(express.json());
 
@@ -140,6 +141,7 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/watchlists', watchlistRoutes);
 app.use('/api/options', optionsRoutes);
 app.use('/api/recent', recentRoutes);
+app.use('/api/contact', contactRoutes);
 
 
 // Static files

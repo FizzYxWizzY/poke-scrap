@@ -179,6 +179,43 @@ async function sendConsolidatedAlert({ to, alerts }) {
 /**
  * Verify email configuration
  */
+async function sendContactMessage({ name, email, subject, message }) {
+  const mailOptions = {
+    from: process.env.GMAIL_USER,
+    to: process.env.GMAIL_USER, // Send to ourselves
+    subject: `Poke'Scrap Contact: ${subject}`,
+    html: `
+      <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto; background: #0f0f1a; color: #ffffff; padding: 20px; border-radius: 12px;">
+        <h2 style="color: #6c5ce7; margin-bottom: 20px;">📧 New Contact Message</h2>
+        
+        <div style="background: #1a1a2e; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #a0a0b8; margin-bottom: 15px;">From: ${name}</h3>
+          <p style="color: #a0a0b8; margin-bottom: 10px;"><strong>Email:</strong> ${email}</p>
+          <p style="color: #a0a0b8; margin-bottom: 15px;"><strong>Subject:</strong> ${subject}</p>
+        </div>
+        
+        <div style="background: #1a1a2e; padding: 20px; border-radius: 8px;">
+          <h4 style="color: #a0a0b8; margin-bottom: 10px;">Message:</h4>
+          <p style="color: #ffffff; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+        </div>
+        
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #2d2d44; text-align: center;">
+          <p style="color: #6c6c80; font-size: 12px;">This message was sent from the Poke'Scrap contact form</p>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Contact message sent successfully');
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending contact message:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 async function verifyEmailConfig() {
   try {
     await transporter.verify();
@@ -192,5 +229,6 @@ async function verifyEmailConfig() {
 
 module.exports = {
   sendConsolidatedAlert,
+  sendContactMessage,
   verifyEmailConfig
 };

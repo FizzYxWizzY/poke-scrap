@@ -151,4 +151,30 @@ router.get('/:id', ensureAuth, async (req, res) => {
   res.json(user);
 });
 
+// Update user role - ADMIN ONLY
+router.put('/:id/role', ensureAdmin, async (req, res) => {
+  const { role } = req.body;
+  const validRoles = ['free', 'paid', 'betatester', 'admin'];
+  
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ error: 'Invalid role. Must be one of: free, paid, betatester, admin' });
+  }
+  
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id, 
+      { role }, 
+      { new: true }
+    );
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json({ message: `User role updated to ${role}`, user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

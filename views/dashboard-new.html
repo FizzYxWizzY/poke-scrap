@@ -506,6 +506,15 @@
     .btn-refresh:hover {
       background: var(--accent-hover);
     }
+
+    .users-section {
+      margin-top: 24px;
+      padding: 20px;
+      background: var(--bg-card-hover);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
+
     .loading, .error {
       text-align: center;
       padding: 40px;
@@ -553,6 +562,8 @@
       margin: 0;
       font-size: 1.5rem;
       font-weight: 600;
+    }
+    .modal-header h2 span {
       background: var(--gradient-1);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -627,6 +638,66 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 2px var(--accent-glow);
     }
+
+    .contact-section h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .contact-desc {
+      margin: 0 0 20px 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-group label {
+      font-weight: 500;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    .form-group input:invalid,
+    .form-group select:invalid,
+    .form-group textarea:invalid {
+      border-color: var(--error);
+    }
   </style>
 </head>
 <body>
@@ -684,13 +755,13 @@
         <div id="user-management-card" class="admin-card">
           <h3>User Management</h3>
           <p>Manage user accounts and roles</p>
-          <button onclick="loadUsers()" class="btn btn-primary">Load Users</button>
+          <button onclick="toggleUsers()" class="btn btn-primary">Toggle Users</button>
         </div>
         
         <div id="stats-card" class="admin-card">
           <h3>System Stats</h3>
           <p>View system statistics</p>
-          <button onclick="toggleStats()" class="btn btn-secondary">Toggle Stats</button>
+          <button onclick="toggleStats()" class="btn btn-primary">Toggle Stats</button>
         </div>
       </div>
 
@@ -702,28 +773,31 @@
         </div>
       </div>
 
-      <div id="users-table" class="users-table hidden">
-        <div class="table-header">
-          <h3>All Users</h3>
-          <button id="toggle-view-btn" class="btn btn-secondary" onclick="toggleUserView()" style="display: none;">📱 Cards</button>
-        </div>
-        <div class="table-container">
-          <table id="users-list">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="users-tbody">
-              <!-- Users will be loaded here -->
-            </tbody>
-          </table>
-        </div>
-        <div id="mobile-user-cards" class="mobile-user-cards">
-          <!-- Mobile cards will be loaded here -->
+      <!-- Users Section -->
+      <div id="users-section" class="users-section hidden">
+        <div id="users-table" class="users-table">
+          <div class="table-header">
+            <h3>All Users</h3>
+            <button id="toggle-view-btn" class="btn btn-secondary" onclick="toggleUserView()" style="display: none;">📱 Cards</button>
+          </div>
+          <div class="table-container">
+            <table id="users-list">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody">
+                <!-- Users will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+          <div id="mobile-user-cards" class="mobile-user-cards">
+            <!-- Mobile cards will be loaded here -->
+          </div>
         </div>
       </div>
     </div>
@@ -765,8 +839,61 @@
     </div>
   </div>
 
+  <!-- Contact Modal -->
+  <div id="contact-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📧 Contact Us</h2>
+        <button onclick="closeContact()" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="contact-section">
+          <p class="contact-desc">Have a question or feedback? We'd love to hear from you!</p>
+
+          <form id="contact-form" class="contact-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contact-name">Name *</label>
+                <input type="text" id="contact-name" required maxlength="100">
+              </div>
+              <div class="form-group">
+                <label for="contact-email">Email *</label>
+                <input type="email" id="contact-email" required maxlength="100">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="contact-subject">Subject *</label>
+              <select id="contact-subject" required>
+                <option value="">Select a subject...</option>
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="Bug Report">Bug Report</option>
+                <option value="Feature Request">Feature Request</option>
+                <option value="Account Support">Account Support</option>
+                <option value="Partnership">Partnership</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="contact-message">Message *</label>
+              <textarea id="contact-message" required maxlength="2000" rows="5" placeholder="Tell us what's on your mind..."></textarea>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeContact()" class="btn btn-secondary">Cancel</button>
+        <button onclick="sendContact()" class="btn btn-primary" id="send-contact-btn">
+          <span id="send-text">Send Message</span>
+          <span id="sending-text" style="display: none;">Sending...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <footer class="footer">
-    © <span id="current-year"></span> Poke'Scrap — <a href="mailto:pokescrap.project@gmail.com" style="color: var(--accent-hover);">Contact</a>
+    © <span id="current-year"></span> Poke'Scrap — <button onclick="showContact()" style="background: none; border: none; color: var(--accent-hover); cursor: pointer; text-decoration: underline;">Contact</button>
   </footer>
 
   <script>
@@ -948,6 +1075,84 @@
       }
     }
 
+    // Contact functions
+    function showContact() {
+      const modal = document.getElementById('contact-modal');
+      modal.classList.remove('hidden');
+      // Focus on first input
+      setTimeout(() => document.getElementById('contact-name').focus(), 100);
+    }
+
+    function closeContact() {
+      const modal = document.getElementById('contact-modal');
+      modal.classList.add('hidden');
+      // Reset form
+      document.getElementById('contact-form').reset();
+      document.getElementById('send-text').style.display = 'inline';
+      document.getElementById('sending-text').style.display = 'none';
+      document.getElementById('send-contact-btn').disabled = false;
+    }
+
+    async function sendContact() {
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const subject = document.getElementById('contact-subject').value;
+      const message = document.getElementById('contact-message').value.trim();
+
+      // Basic validation
+      if (!name || !email || !subject || !message) {
+        showMessage('Please fill in all required fields', 'error');
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showMessage('Please enter a valid email address', 'error');
+        return;
+      }
+
+      // Show loading state
+      document.getElementById('send-text').style.display = 'none';
+      document.getElementById('sending-text').style.display = 'inline';
+      document.getElementById('send-contact-btn').disabled = true;
+
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            subject,
+            message
+          })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage(result.message, 'success');
+          closeContact();
+        } else {
+          showMessage(result.error || 'Failed to send message', 'error');
+          // Reset button state
+          document.getElementById('send-text').style.display = 'inline';
+          document.getElementById('sending-text').style.display = 'none';
+          document.getElementById('send-contact-btn').disabled = false;
+        }
+      } catch (error) {
+        console.error('Contact form error:', error);
+        showMessage('Failed to send message. Please try again.', 'error');
+        // Reset button state
+        document.getElementById('send-text').style.display = 'inline';
+        document.getElementById('sending-text').style.display = 'none';
+        document.getElementById('send-contact-btn').disabled = false;
+      }
+    }
+
     // Admin functions
     async function loadUsers() {
       try {
@@ -958,7 +1163,6 @@
         const users = await response.json();
         displayUsers(users);
         createMobileCards(users);
-        document.getElementById('users-table').classList.remove('hidden');
         document.getElementById('toggle-view-btn').style.display = 'block';
         showMessage('Users loaded successfully!', 'success');
       } catch (error) {
@@ -1061,6 +1265,18 @@
         loadStats();
       } else {
         statsSection.classList.add('hidden');
+      }
+    }
+
+    function toggleUsers() {
+      const usersSection = document.getElementById('users-section');
+      const isHidden = usersSection.classList.contains('hidden');
+      
+      if (isHidden) {
+        usersSection.classList.remove('hidden');
+        loadUsers();
+      } else {
+        usersSection.classList.add('hidden');
       }
     }
 
@@ -1221,5 +1437,101 @@
       });
     }
   </script>
+
+  <!-- Contact Modal -->
+  <div id="contactModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📧 <span>Contact Us</span></h2>
+        <button class="modal-close" onclick="closeContact()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="contact-section">
+          <h3>Get in Touch</h3>
+          <p class="contact-desc">Have questions about Poke'Scrap? We'd love to hear from you!</p>
+          <form class="contact-form" onsubmit="sendContact(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contactName">Name *</label>
+                <input type="text" id="contactName" name="name" required>
+              </div>
+              <div class="form-group">
+                <label for="contactEmail">Email *</label>
+                <input type="email" id="contactEmail" name="email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="contactSubject">Subject *</label>
+              <select id="contactSubject" name="subject" required>
+                <option value="">Select a subject</option>
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="Bug Report">Bug Report</option>
+                <option value="Feature Request">Feature Request</option>
+                <option value="Account Support">Account Support</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="contactMessage">Message *</label>
+              <textarea id="contactMessage" name="message" required></textarea>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeContact()">Cancel</button>
+        <button class="btn-primary" onclick="sendContact(event)">Send Message</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Modal Functions -->
+  <script>
+    function showContact() {
+      document.getElementById('contactModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeContact() {
+      document.getElementById('contactModal').style.display = 'none';
+      document.body.style.overflow = '';
+      // Reset form
+      const form = document.querySelector('#contactModal form');
+      if (form) form.reset();
+    }
+
+    async function sendContact(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('contactName').value.trim();
+      const email = document.getElementById('contactEmail').value.trim();
+      const subject = document.getElementById('contactSubject').value;
+      const message = document.getElementById('contactMessage').value.trim();
+
+      if (!name || !email || !subject || !message) {
+        showMessage('Please fill in all required fields.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, subject, message })
+        });
+
+        if (res.ok) {
+          showMessage('Message sent successfully!', 'success');
+          closeContact();
+        } else {
+          const data = await res.json();
+          showMessage('Failed to send message: ' + (data.error || 'Unknown error'), 'error');
+        }
+      } catch (err) {
+        showMessage('Error sending message: ' + err.message, 'error');
+      }
+    }
+  </script>
+
 </body>
 </html>
