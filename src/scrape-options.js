@@ -45,13 +45,13 @@ const puppeteer = require('puppeteer');
         });
       }
 
-      // Get expansions
+      // Get all expansions (when no category is selected)
       const expSelect = document.querySelector('select[id^="idExpansion"]');
-      const expansions = [];
+      const allExpansions = [];
       if (expSelect) {
         expSelect.querySelectorAll('option').forEach(opt => {
           if (opt.value && opt.value !== '0') {
-            expansions.push({ 
+            allExpansions.push({ 
               value: opt.value, 
               text: opt.textContent.trim() 
             });
@@ -59,15 +59,65 @@ const puppeteer = require('puppeteer');
         });
       }
 
-      return { categories, expansions };
+      return { categories, allExpansions };
     });
+
+    // Now capture category-expansion relationships
+    const categoryExpansions = [];
+    
+    for (const category of data.categories) {
+      console.log(`🔍 Scraping expansions for category: ${category.text}`);
+      
+      try {
+        // Select the category
+        await page.select(`select[id^="idCategory"]`, category.value);
+        
+        // Wait for the expansion dropdown to update (use setTimeout instead of waitForTimeout)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Get available expansions for this category
+        const expansions = await page.evaluate(() => {
+          const expSelect = document.querySelector('select[id^="idExpansion"]');
+          const expansions = [];
+          if (expSelect) {
+            expSelect.querySelectorAll('option').forEach(opt => {
+              if (opt.value && opt.value !== '0') {
+                expansions.push({ 
+                  value: opt.value, 
+                  text: opt.textContent.trim() 
+                });
+              }
+            });
+          }
+          return expansions;
+        });
+        
+        categoryExpansions.push({
+          categoryId: category.value,
+          categoryName: category.text,
+          expansions: expansions,
+          expansionCount: expansions.length
+        });
+        
+        console.log(`  ✅ Found ${expansions.length} expansions for ${category.text}`);
+        
+        // Log first few expansions for debugging
+        if (expansions.length > 0) {
+          console.log(`    Sample: ${expansions.slice(0, 3).map(e => e.text).join(', ')}`);
+        }
+        
+      } catch (err) {
+        console.error(`❌ Error scraping expansions for ${category.text}:`, err.message);
+      }
+    }
 
     console.log(JSON.stringify({
       success: true,
       categoriesCount: data.categories.length,
-      expansionsCount: data.expansions.length,
+      expansionsCount: data.allExpansions.length,
       categories: data.categories,
-      expansions: data.expansions
+      expansions: data.allExpansions,
+      categoryExpansions: categoryExpansions
     }));
 
   } catch (err) {

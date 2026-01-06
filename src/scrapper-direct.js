@@ -1,18 +1,56 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const AnonymizeUA = require('puppeteer-extra-plugin-anonymize-ua');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { countries, languages } = require('../data/cardmarket-data');
 
+// Add stealth plugins
+puppeteer.use(StealthPlugin());
+puppeteer.use(AnonymizeUA());
+
 /**
- * Direct product scrapper
- * Scrapes a specific product using its exact Cardmarket path
- * 
- * Usage: node src/scrapper-direct.js "productPath" "country" "language"
- * Example: node src/scrapper-direct.js "Elite-Trainer-Boxes/151-Elite-Trainer-Box" "switzerland" "french"
+ * Simulate human-like behavior to avoid detection
  */
+async function simulateHumanBehavior(page) {
+  // Random mouse movements
+  const viewport = await page.viewport();
+  const x = Math.random() * (viewport.width - 100) + 50;
+  const y = Math.random() * (viewport.height - 100) + 50;
+  await page.mouse.move(x, y, { steps: Math.floor(Math.random() * 10) + 5 });
+  
+  // Random scroll
+  await page.evaluate(() => {
+    const scrollAmount = Math.random() * 500;
+    window.scrollTo({
+      top: scrollAmount,
+      behavior: 'smooth'
+    });
+  });
+  
+  // Random pause
+  await new Promise(resolve => setTimeout(resolve, Math.random() * 1500 + 500));
+  
+  // Sometimes click on random elements (safely)
+  try {
+    const clickableElements = await page.$$('a, button, [role="button"], [onclick]');
+    if (clickableElements.length > 0 && Math.random() < 0.1) { // 10% chance
+      const randomElement = clickableElements[Math.floor(Math.random() * clickableElements.length)];
+      await randomElement.hover();
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 400 + 200));
+    }
+  } catch (e) {
+    // Ignore if clicking fails
+  }
+}
 
 (async () => {
+	// Global timeout to prevent hanging
+	const globalTimeout = setTimeout(() => {
+		console.log(JSON.stringify([]));
+		process.exit(0);
+	}, 20000); // 20 seconds
 	const args = process.argv.slice(2);
 	
 	if (args.length < 3) {
@@ -46,24 +84,70 @@ const { countries, languages } = require('../data/cardmarket-data');
 	
 	// Build URL with exact product path
 	const url = `https://www.cardmarket.com/en/Pokemon/Products/${productPath}?sellerCountry=${countryMatch.value}&language=${langMatch.value}`;
+	console.error('Building product URL:', url);
 	
 	const browser = await puppeteer.launch({
-		headless: true,
+		headless: 'new',
 		args: [
 			'--no-sandbox',
 			'--disable-setuid-sandbox',
-			'--disable-blink-features=AutomationControlled'
+			'--disable-dev-shm-usage',
+			'--disable-web-security',
+			'--disable-blink-features=AutomationControlled',
+			'--disable-features=VizDisplayCompositor'
 		]
 	});
 	
 	try {
 		const page = await browser.newPage();
-		await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
 		
-		await page.goto(url, { waitUntil: 'domcontentloaded' });
+		// Set realistic viewport
+		await page.setViewport({
+			width: 1920,
+			height: 1080
+		});
+		
+		// Add initial delay
+		await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+		
+		// First visit the main Pokemon page to establish a session
+		console.error('Visiting main Pokemon page first...');
+		try {
+			await page.goto('https://www.cardmarket.com/en/Pokemon', {
+				waitUntil: 'networkidle2',
+				timeout: 15000
+			});
+			
+			// Wait and simulate human behavior
+			await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1500));
+			await simulateHumanBehavior(page);
+		} catch (mainPageError) {
+			console.error('Main page visit failed:', mainPageError.message);
+			// Continue anyway
+		}
+		
+		// Now go to the product URL
+		console.error('Accessing product URL:', url);
+		
+		try {
+			await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+		} catch (gotoError) {
+			console.error('Page goto timeout or error:', gotoError.message);
+			console.log(JSON.stringify([]));
+			return;
+		}
+		
+		// Check if blocked by Cloudflare
+		const title = await page.title();
+		console.error('Page title:', title);
+		if (title.includes('Just a moment') || title.includes('Checking your browser')) {
+			console.error('Cloudflare detected in direct scrapper');
+			console.log(JSON.stringify([]));
+			return;
+		}
 		
 		// Wait for listings
-		await page.waitForSelector('.table-body', { timeout: 15000 }).catch(() => {});
+		await page.waitForSelector('.table-body', { timeout: 5000 }).catch(() => {});
 		
 		// Get the image URL first - use 2nd img.is-front (1st is previous card in carousel)
 		const imageUrl = await page.evaluate(() => {
@@ -85,7 +169,6 @@ const { countries, languages } = require('../data/cardmarket-data');
 				const imgPage = await browser.newPage();
 				const cookies = await page.cookies();
 				await imgPage.setCookie(...cookies);
-				await imgPage.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
 				
 				const response = await imgPage.goto(imageUrl, { waitUntil: 'networkidle0' });
 				
@@ -177,6 +260,7 @@ const { countries, languages } = require('../data/cardmarket-data');
 	} catch (err) {
 		console.log(JSON.stringify({ error: err.message }));
 	} finally {
+		clearTimeout(globalTimeout);
 		await browser.close();
 	}
 })();

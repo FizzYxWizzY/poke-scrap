@@ -1,4 +1,5 @@
 const { body, query, param, validationResult } = require('express-validator');
+const { categories, languages, countries } = require('../data/cardmarket-data');
 
 // Middleware to check validation results
 const validate = (req, res, next) => {
@@ -11,9 +12,9 @@ const validate = (req, res, next) => {
 
 // Article search validation
 const validateArticleSearch = [
-  query('category').notEmpty().withMessage('La catégorie est requise').isIn(['etb', 'booster']).withMessage('Catégorie invalide'),
-  query('language').notEmpty().withMessage('La langue est requise').isIn(['french', 'english', 'spanish', 'german', 'italian', 'portugese']).withMessage('Langue invalide'),
-  query('country').notEmpty().withMessage('Le pays est requis'),
+  query('category').notEmpty().withMessage('La catégorie est requise').isIn(categories.map(c => c.value)).withMessage('Catégorie invalide'),
+  query('language').notEmpty().withMessage('La langue est requise').isIn(languages.map(l => l.value)).withMessage('Langue invalide'),
+  query('country').notEmpty().withMessage('Le pays est requis').isIn(countries.map(c => c.value)).withMessage('Pays invalide'),
   query('serie').notEmpty().withMessage('La série est requise').trim().escape(),
   validate
 ];

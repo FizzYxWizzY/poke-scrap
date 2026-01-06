@@ -1,4 +1,15 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const AnonymizeUA = require('puppeteer-extra-plugin-anonymize-ua');
+
+// Add stealth plugin to make detection harder
+puppeteer.use(StealthPlugin());
+
+// Add user agent anonymization
+puppeteer.use(AnonymizeUA({
+  stripHeadless: true,
+  makeWindows: true
+}));
 
 /* 
 CATEGORIES:
@@ -168,16 +179,150 @@ const productSuffixes = {
 		// console.log(`\n\nurl: ${url}\n\n\n`);
 		
 		const browser = await puppeteer.launch({
-			headless: true,
+			headless: 'new',
 			args: [
 				'--no-sandbox',
 				'--disable-setuid-sandbox',
-				'--disable-blink-features=AutomationControlled'
-			]
+				'--disable-dev-shm-usage',
+				'--disable-accelerated-2d-canvas',
+				'--no-first-run',
+				'--no-zygote',
+				'--disable-gpu',
+				'--disable-web-security',
+				'--disable-features=VizDisplayCompositor',
+				'--disable-ipc-flooding-protection',
+				'--disable-background-timer-throttling',
+				'--disable-backgrounding-occluded-windows',
+				'--disable-renderer-backgrounding',
+				'--disable-field-trial-config',
+				'--disable-back-forward-cache',
+				'--disable-hang-monitor',
+				'--disable-ipc-flooding-protection',
+				'--disable-popup-blocking',
+				'--disable-prompt-on-repost',
+				'--force-color-profile=srgb',
+				'--metrics-recording-only',
+				'--no-default-browser-check',
+				'--no-first-run',
+				'--enable-automation=false',
+				'--password-store=basic',
+				'--use-mock-keychain',
+				'--disable-component-extensions-with-background-pages',
+				'--disable-default-apps',
+				'--disable-sync',
+				'--disable-translate',
+				'--hide-scrollbars',
+				'--metrics-recording-only',
+				'--mute-audio',
+				'--no-default-browser-check',
+				'--no-first-run',
+				'--disable-component-update',
+				'--disable-domain-reliability',
+				'--disable-client-side-phishing-detection',
+				'--disable-background-networking',
+				'--disable-breakpad',
+				'--disable-component-extensions-with-background-pages',
+				'--disable-features=TranslateUI,BlinkGenPropertyTrees',
+				'--disable-ipc-flooding-protection',
+				'--disable-hang-monitor',
+				'--disable-prompt-on-repost',
+				'--force-color-profile=srgb',
+				'--enable-features=NetworkService,NetworkServiceInProcess',
+				'--disable-features=VizDisplayCompositor,VizHitTestSurfaceLayer'
+			],
+			ignoreDefaultArgs: ['--enable-automation'],
+			ignoreHTTPSErrors: true
 		});
 		const page = await browser.newPage();
-
-		await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
+		
+		// Set a realistic viewport
+		await page.setViewport({ 
+			width: 1366 + Math.floor(Math.random() * 200), 
+			height: 768 + Math.floor(Math.random() * 200),
+			deviceScaleFactor: 1,
+			hasTouch: false,
+			isLandscape: true,
+			isMobile: false
+		});
+		
+		// Comprehensive browser fingerprinting
+		await page.evaluateOnNewDocument(() => {
+			// Remove webdriver property
+			Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+			
+			// Mock realistic navigator properties
+			Object.defineProperty(navigator, 'plugins', { 
+				get: () => [
+					{ name: 'Chrome PDF Plugin', description: 'Portable Document Format', filename: 'internal-pdf-viewer' },
+					{ name: 'Chrome PDF Viewer', description: '', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
+					{ name: 'Native Client', description: '', filename: 'internal-nacl-plugin' }
+				] 
+			});
+			
+			Object.defineProperty(navigator, 'languages', { 
+				get: () => ['en-US', 'en', 'fr'] 
+			});
+			
+			// Mock permissions
+			const originalQuery = window.navigator.permissions.query;
+			window.navigator.permissions.query = (parameters) => (
+				parameters.name === 'notifications' ?
+				Promise.resolve({ state: Notification.permission }) :
+				originalQuery(parameters)
+			);
+			
+			// Mock chrome runtime
+			window.chrome = {
+				runtime: {
+					onConnect: undefined,
+					onMessage: undefined,
+					connect: function() { return {}; },
+					sendMessage: function() { return {}; }
+				},
+				csi: function() { return {}; },
+				loadTimes: function() { return {}; },
+				app: {
+					isInstalled: false
+				}
+			};
+			
+			// Mock webkit properties
+			window.webkit = {
+				messageHandlers: {},
+				postMessage: function() {}
+			};
+			
+			// Override toString methods
+			const toString = Function.prototype.toString;
+			Function.prototype.toString = function() {
+				if (this === navigator.webdriver) return 'function webdriver() { [native code] }';
+				return toString.apply(this, arguments);
+			};
+		});
+		
+		// Intercept and modify requests
+		await page.setRequestInterception(true);
+		page.on('request', (request) => {
+			const headers = {
+				...request.headers(),
+				'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+				'Accept-Encoding': 'gzip, deflate, br',
+				'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
+				'Cache-Control': 'max-age=0',
+				'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+				'Sec-Ch-Ua-Mobile': '?0',
+				'Sec-Ch-Ua-Platform': '"Windows"',
+				'Sec-Fetch-Dest': 'document',
+				'Sec-Fetch-Mode': 'navigate',
+				'Sec-Fetch-Site': 'none',
+				'Sec-Fetch-User': '?1',
+				'Upgrade-Insecure-Requests': '1'
+			};
+			request.continue({ headers });
+		});
+		
+		// Add random delay before navigation
+		await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000));
 
 		await page.goto(url, { waitUntil: 'domcontentloaded' });
 

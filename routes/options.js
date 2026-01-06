@@ -4,6 +4,7 @@ const { ensureAuth, ensureAdmin } = require('../middlewares/auth');
 const { 
   getCategories, 
   getExpansions, 
+  getExpansionsByCategory,
   scrapeProducts,
   searchProducts,
   updateOptionsFromCardmarket 
@@ -107,6 +108,20 @@ router.get('/products', async (req, res) => {
     
     res.json(result);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 GET expansions filtered by category - PUBLIC
+router.get('/expansions/:categoryId', async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    console.log(`🔍 Route hit: /expansions/${categoryId}`);
+    const expansions = await getExpansionsByCategory(categoryId);
+    console.log(`📤 Returning ${expansions.length} expansions for category ${categoryId}`);
+    res.json(expansions);
+  } catch (err) {
+    console.log(`❌ Error in expansions route: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });

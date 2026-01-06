@@ -66,7 +66,7 @@ router.get('/direct', async (req, res) => {
 });
 
 // 🔹 SEARCH (with scrapper fallback)
-router.get('/', ensureAuth, validateArticleSearch, async (req, res) => {
+router.get('/', validateArticleSearch, async (req, res) => {
   const { category, language, country, serie } = req.query;
 
   try {

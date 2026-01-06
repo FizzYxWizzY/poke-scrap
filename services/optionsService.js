@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const Category = require('../db/models/Category');
 const Expansion = require('../db/models/Expansion');
+const CategoryExpansion = require('../db/models/CategoryExpansion');
 const ProductCache = require('../db/models/ProductCache');
 
 // Cache duration: 1 hour for product list
@@ -63,12 +64,29 @@ async function updateOptionsFromCardmarket() {
           );
         }
 
-        console.log(`✅ Updated ${data.categories.length} categories and ${data.expansions.length} expansions (${new Date().toISOString()})`);
+        // Update category-expansion mappings
+        if (data.categoryExpansions) {
+          for (const mapping of data.categoryExpansions) {
+            await CategoryExpansion.findOneAndUpdate(
+              { categoryId: mapping.categoryId },
+              { 
+                categoryId: mapping.categoryId,
+                categoryName: mapping.categoryName,
+                expansions: mapping.expansions,
+                lastUpdate: new Date()
+              },
+              { upsert: true }
+            );
+          }
+        }
+
+        console.log(`✅ Updated ${data.categories.length} categories, ${data.expansions.length} expansions, and ${data.categoryExpansions?.length || 0} category-expansion mappings (${new Date().toISOString()})`);
         
         resolve({ 
           success: true, 
           categoriesCount: data.categories.length,
-          expansionsCount: data.expansions.length
+          expansionsCount: data.expansions.length,
+          mappingsCount: data.categoryExpansions?.length || 0
         });
 
       } catch (err) {
@@ -95,6 +113,26 @@ async function getCategories() {
  */
 async function getExpansions() {
   return await Expansion.find({}).sort({ text: 1 });
+}
+
+/**
+ * Get expansions filtered by category
+ */
+async function getExpansionsByCategory(categoryId) {
+  if (!categoryId) {
+    // Return all expansions if no category specified
+    return await Expansion.find({}).sort({ text: 1 });
+  }
+
+  const mapping = await CategoryExpansion.findOne({ categoryId });
+  if (mapping && mapping.expansions.length > 0) {
+    // Return the filtered expansions for this category
+    return mapping.expansions.sort((a, b) => a.text.localeCompare(b.text));
+  } else {
+    // Fallback to all expansions if no mapping found
+    console.warn(`⚠️ No expansion mapping found for category ${categoryId}, returning all expansions`);
+    return await Expansion.find({}).sort({ text: 1 });
+  }
 }
 
 /**
@@ -256,6 +294,7 @@ module.exports = {
   updateOptionsFromCardmarket,
   getCategories,
   getExpansions,
+  getExpansionsByCategory,
   scrapeProducts,
   searchProducts
 };

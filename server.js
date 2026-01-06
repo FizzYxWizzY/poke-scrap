@@ -103,6 +103,7 @@ const userRoutes = require('./routes/users');
 const sellerRoutes = require('./routes/sellers');
 const articleRoutes = require('./routes/articles');
 const watchlistRoutes = require('./routes/watchlists');
+const portfolioRoutes = require('./routes/portfolios');
 const optionsRoutes = require('./routes/options');
 const recentRoutes = require('./routes/recent');
 const contactRoutes = require('./routes/contact');
@@ -139,6 +140,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/watchlists', watchlistRoutes);
+app.use('/api/portfolios', portfolioRoutes);
 app.use('/api/options', optionsRoutes);
 app.use('/api/recent', recentRoutes);
 app.use('/api/contact', contactRoutes);
@@ -164,6 +166,10 @@ app.get('/dashboard', ensureAuth, (req, res) => {
 
 app.get('/api/watch', ensureAuth, (req, res) => {
 	res.sendFile(path.join(__dirname, 'views', 'watchlist-new.html'));
+});
+
+app.get('/portfolio', ensureAuth, (req, res) => {
+	res.sendFile(path.join(__dirname, 'views', 'portfolio.html'));
 });
 
 // Search page - PUBLIC (no auth required)

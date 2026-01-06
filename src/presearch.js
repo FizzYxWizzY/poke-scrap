@@ -1,136 +1,178 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const { categories, languages, countries } = require('../data/cardmarket-data');
 
-/**
- * Pre-search scrapper
- * Searches Cardmarket and returns all matching products with their URLs
- * 
- * Usage: node src/presearch.js "category" "search term"
- * Example: node src/presearch.js "Elite-Trainer-Boxes" "151"
- */
+// Use all stealth plugins
+puppeteer.use(StealthPlugin());
+//   stripHeadless: true,
+//   makeWindows: true
+// }));
 
-(async () => {
-	const args = process.argv.slice(2);
-	
-	if (args.length < 2) {
-		console.log(JSON.stringify({ error: 'Usage: node presearch.js <category> <search>' }));
-		return;
-	}
-	
-	let categorySlug = args[0];
-	const searchTerm = args[1];
-	
-	// Support legacy format
-	const legacyMap = { 'etb': 'Elite-Trainer-Boxes', 'booster': 'Boosters' };
-	if (legacyMap[categorySlug.toLowerCase()]) {
-		categorySlug = legacyMap[categorySlug.toLowerCase()];
-	}
-	
-	// Find category value for the search form
-	const categoryData = categories.find(c => c.slug.toLowerCase() === categorySlug.toLowerCase());
-	if (!categoryData) {
-		console.log(JSON.stringify({ error: 'Category not found', availableCategories: categories.map(c => c.slug) }));
-		return;
-	}
-	
-	const browser = await puppeteer.launch({
-		headless: true,
-		args: [
-			'--no-sandbox',
-			'--disable-setuid-sandbox',
-			'--disable-blink-features=AutomationControlled'
-		]
-	});
-	
-	try {
-		const page = await browser.newPage();
-		await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36');
-		
-		// Build search URL
-		// https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=151&idCategory=1016
-		const searchUrl = `https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=${encodeURIComponent(searchTerm)}&idCategory=${categoryData.value}`;
-		
-		await page.goto(searchUrl, { waitUntil: 'domcontentloaded' });
-		
-		// Wait for results
-		await page.waitForSelector('.table, .info-container', { timeout: 15000 }).catch(() => {});
-		
-		// Extract all product links from search results
-		const products = await page.evaluate(() => {
-			const results = [];
-			
-			// Find all product rows in search results
-			const rows = document.querySelectorAll('.table-body .row');
-			
-			rows.forEach(row => {
-				// Get product link and name
-				const linkEl = row.querySelector('a[href*="/Products/"]');
-				const imgEl = row.querySelector('img');
-				
-				if (linkEl) {
-					const href = linkEl.href;
-					const name = linkEl.innerText.trim() || linkEl.querySelector('span')?.innerText.trim();
-					const image = imgEl?.src || null;
-					
-					// Extract product slug from URL
-					// e.g., /en/Pokemon/Products/Elite-Trainer-Boxes/151-Elite-Trainer-Box
-					const urlParts = href.split('/Products/');
-					let productPath = '';
-					if (urlParts[1]) {
-						productPath = urlParts[1].split('?')[0]; // Remove query params
-					}
-					
-					if (name && href) {
-						results.push({
-							name: name,
-							url: href,
-							productPath: productPath,
-							image: image
-						});
-					}
-				}
-			});
-			
-			// Also check for direct product cards (different layout)
-			const cards = document.querySelectorAll('.col-12 a[href*="/Products/"]');
-			cards.forEach(card => {
-				const href = card.href;
-				const name = card.innerText.trim();
-				const imgEl = card.querySelector('img');
-				const image = imgEl?.src || null;
-				
-				const urlParts = href.split('/Products/');
-				let productPath = '';
-				if (urlParts[1]) {
-					productPath = urlParts[1].split('?')[0];
-				}
-				
-				// Avoid duplicates
-				if (name && href && !results.find(r => r.url === href)) {
-					results.push({
-						name: name,
-						url: href,
-						productPath: productPath,
-						image: image
-					});
-				}
-			});
-			
-			return results;
-		});
-		
-		console.log(JSON.stringify({
-			success: true,
-			category: categoryData.text,
-			categorySlug: categorySlug,
-			searchTerm: searchTerm,
-			resultsCount: products.length,
-			products: products
-		}));
-		
-	} catch (err) {
-		console.log(JSON.stringify({ error: err.message }));
-	} finally {
-		await browser.close();
-	}
-})();
+/**
+ * Simulate human-like behavior to avoid detection
+ */
+async function simulateHumanBehavior(page) {
+  // Random mouse movements
+  const viewport = await page.viewport();
+  const x = Math.random() * (viewport.width - 100) + 50;
+  const y = Math.random() * (viewport.height - 100) + 50;
+  await page.mouse.move(x, y, { steps: Math.floor(Math.random() * 10) + 5 });
+  
+  // Random scroll
+  await page.evaluate(() => {
+    const scrollAmount = Math.random() * 500;
+    window.scrollTo({
+      top: scrollAmount,
+      behavior: 'smooth'
+    });
+  });
+  
+  // Random pause
+  await new Promise(resolve => setTimeout(resolve, Math.random() * 1500 + 500));
+  
+  // Sometimes click on random elements (safely)
+  try {
+    const clickableElements = await page.$$('a, button, [role="button"], [onclick]');
+    if (clickableElements.length > 0 && Math.random() < 0.1) { // 10% chance
+      const randomElement = clickableElements[Math.floor(Math.random() * clickableElements.length)];
+      await randomElement.hover();
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 400 + 200));
+    }
+  } catch (e) {
+    // Ignore if clicking fails
+  }
+}
+
+/**
+ * Main presearch function that can be imported as a module
+ */
+async function performPresearch(categorySlug, searchTerm) {
+  // Support legacy format
+  const legacyMap = { 'etb': 'Elite-Trainer-Boxes', 'booster': 'Boosters' };
+  if (legacyMap[categorySlug.toLowerCase()]) {
+    categorySlug = legacyMap[categorySlug.toLowerCase()];
+  }
+  
+  // Find category value for the search form
+  const categoryData = categories.find(c => c.slug.toLowerCase() === categorySlug.toLowerCase());
+  if (!categoryData) {
+    return { error: 'Category not found', availableCategories: categories.map(c => c.slug) };
+  }
+  
+  let browser;
+  try {
+    // Launch browser with stealth plugin
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-web-security',
+        '--disable-blink-features=AutomationControlled',
+        '--disable-features=VizDisplayCompositor'
+      ]
+    });
+    
+    const page = await browser.newPage();
+    
+    // Set realistic viewport
+    await page.setViewport({
+      width: 1920,
+      height: 1080
+    });
+    
+    // Add initial delay
+    await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+    
+    // Go directly to search URL (skip main page visit to avoid detection)
+    const searchUrl = `https://www.cardmarket.com/en/Pokemon/Products/Singles?name=${encodeURIComponent(searchTerm)}&language=1&idCategory=${categoryData.value}`;
+    console.log('Navigating directly to search URL:', searchUrl);
+    
+    await page.goto(searchUrl, {
+      waitUntil: 'networkidle2',
+      timeout: 15000
+    });
+    
+    console.log('Search page loaded, checking content...');
+    const title = await page.title();
+    console.log('Page title:', title);
+    
+    // Check if we're blocked by Cloudflare
+    const pageContent = await page.content();
+    if (pageContent.includes('Just a moment') || pageContent.includes('Checking your browser') || pageContent.includes('challenge-platform')) {
+      console.log('Cloudflare protection detected, returning empty results for fallback processing');
+      return { success: true, products: [], cloudflareBlocked: true, searchTerm: searchTerm, category: categorySlug };
+    }
+    
+    // Extract product data
+    console.log('Extracting product data...');
+    const products = await page.evaluate(() => {
+      console.log('Page URL:', window.location.href);
+      console.log('Page title:', document.title);
+      
+      const results = [];
+      const productRows = document.querySelectorAll('table tbody tr');
+      console.log('Found', productRows.length, 'table rows');
+      
+      for (const row of productRows) {
+        const link = row.querySelector('a[href*="Products/Singles"]');
+        const nameElement = row.querySelector('.col-10 a, .col-8 a');
+        const priceElement = row.querySelector('.col-price');
+        const rarityElement = row.querySelector('.col-rarity img');
+        
+        if (link && nameElement) {
+          const url = link.href;
+          const name = nameElement.textContent.trim();
+          const price = priceElement ? priceElement.textContent.trim() : '';
+          const rarity = rarityElement ? rarityElement.alt || rarityElement.title : '';
+          
+          // Extract product ID from URL
+          const productIdMatch = url.match(/\/(\d+)$/);
+          const productId = productIdMatch ? productIdMatch[1] : '';
+          
+          results.push({
+            id: productId,
+            name: name,
+            url: url,
+            price: price,
+            rarity: rarity
+          });
+        }
+      }
+      
+      console.log('Extracted', results.length, 'products');
+      return results;
+    });
+    
+    return { success: true, products: products, searchTerm: searchTerm, category: categorySlug };
+    
+  } catch (error) {
+    return { error: error.message };
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+}
+
+// Export the function for use as a module
+module.exports = { performPresearch };
+
+// If run directly from command line, execute the search
+if (require.main === module) {
+  (async () => {
+    const args = process.argv.slice(2);
+    
+    if (args.length < 2) {
+      console.log(JSON.stringify({ error: 'Usage: node presearch.js <category> <search>' }));
+      return;
+    }
+    
+    const categorySlug = args[0];
+    const searchTerm = args[1];
+    
+    const result = await performPresearch(categorySlug, searchTerm);
+    console.log(JSON.stringify(result));
+  })();
+}

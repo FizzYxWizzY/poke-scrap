@@ -39,4 +39,9 @@ passport.use(new GoogleStrategy({
 }));
 
 passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser((id, done) => User.findById(id).then(user => done(null, user)));
+passport.deserializeUser((id, done) => {
+  if (!id || typeof id !== 'string' || !id.match(/^[0-9a-fA-F]{24}$/)) {
+    return done(null, false);
+  }
+  User.findById(id).then(user => done(null, user)).catch(err => done(err));
+});

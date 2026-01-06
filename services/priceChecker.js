@@ -93,7 +93,7 @@ async function checkAllWatchlists() {
       }
 
       // Small delay between searches to avoid rate limiting
-      await sleep(2000);
+      await sleep(5000 + Math.random() * 3000); // 5-8 seconds
     }
 
     // Send one consolidated email per user
